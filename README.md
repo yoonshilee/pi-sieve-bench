@@ -118,7 +118,9 @@ formal batch and do not establish general performance gains.
 Charts use Matplotlib's sketch styling and the bundled
 [Caveat font](https://github.com/google/fonts/tree/5571d84c0d8c70ec1af4f64072d8c5cf1e4e9643/ofl/caveat),
 distributed under the [SIL Open Font License](assets/fonts/OFL.txt). Rendering is
-offline; the hand-drawn styling does not change the plotted measurements.
+offline; hand-drawn titles and outlines retain regular-font labels and numbers for
+readability. Heatmap cells use pale green for all checks passed, amber for partial
+passes, and pink for zero or unrun stages. Styling does not change the measurements.
 
 ## Privacy and repository checks
 
