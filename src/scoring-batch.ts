@@ -12,8 +12,8 @@ export function scoringSummary(rows: Run[]) {
         const usage = emptyUsage();
         for (const stage of run.stages) addUsage(usage, stage.usage);
         const selections = run.stages.flatMap(stage => stage.scoring ?? []);
-        const validDecisions = run.stages.length === 5 && (run.arm === "score-self" || run.stages.every(stage => stage.scoring?.length === 1 && stage.scoring[0].selectionValid && stage.scoring[0].nextCommandMatched && stage.scoring[0].commandGeneratedAfterResponse && stage.scoring[0].executionCompleted));
-        const validScoring = run.arm === "score-self" ? selections.length === 0 : run.stages.length === 5 && run.stages.every(stage => stage.scoring?.length === 1 && stage.scoring[0].reason === "none");
+        const validDecisions = run.stages.length === 5 && (run.arm === "score-self" || run.stages.every(stage => (stage.scoring ?? []).every(call => call.selectionValid && call.nextCommandMatched && call.commandGeneratedAfterResponse && call.executionCompleted)));
+        const validScoring = run.arm === "score-self" ? selections.length === 0 : run.stages.length === 5 && run.stages.every(stage => (stage.scoring ?? []).every(call => call.reason === "none"));
         const jevTokens = (field: "inputTokens" | "outputTokens") => {
             const values = run.stages.flatMap(stage => stage.jev[field] === null ? [] : [stage.jev[field]]);
             return values.length ? values.reduce((sum, value) => sum + value, 0) : null;
@@ -21,7 +21,7 @@ export function scoringSummary(rows: Run[]) {
         return { id: run.id, arm: run.arm, repeat: run.repeat, status: run.status, success: run.success,
             seconds: run.elapsedMs / 1000, stageScore: score(run), requests: run.stages.reduce((sum, s) => sum + s.requests, 0),
             toolCalls: run.stages.reduce((sum, s) => sum + s.toolCalls, 0), toolErrors: run.stages.reduce((sum, s) => sum + s.toolErrors, 0),
-            validDecisions, validScoring, validComparison: validDecisions && validScoring, usage,
+            validDecisions, validScoring, validComparison: validDecisions && validScoring, decisionsDelegated: selections.length, usage,
             jevRequests: run.stages.reduce((sum, s) => sum + s.jev.requests, 0),
             jevInput: jevTokens("inputTokens"), jevOutput: jevTokens("outputTokens"),
             unavailableScores: selections.filter(s => s.reason !== "none").length,
@@ -43,7 +43,7 @@ export function scoringSummary(rows: Run[]) {
         const baseline = runs.find(other => other.arm === "score-self" && other.repeat === run.repeat && other.success && other.validComparison);
         return baseline && run.seconds > 0 ? [baseline.seconds / run.seconds] : [];
     });
-    return { experiment: "delegated-command-choice-v0.4", runs, groups, matchedSuccessPairs: pairedRatios.length,
+    return { experiment: "adaptive-command-choice-v0.5", runs, groups, matchedSuccessPairs: pairedRatios.length,
         medianBaselineOverJev: median(pairedRatios), actualCostUsd: null };
 }
 
@@ -58,10 +58,10 @@ export async function runScoringBatch(batch: string, sourceHash: string, harness
         if (prior.sourceHash !== sourceHash || prior.sieveCommit !== SCORING_COMMIT) throw new Error("Cannot resume a batch with changed experiment code.");
     } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-        await atomicJson(manifestPath, { experiment: "delegated-command-choice-v0.4", batch, createdAt: new Date().toISOString(), sourceHash, harnessCommit,
+        await atomicJson(manifestPath, { experiment: "adaptive-command-choice-v0.5", batch, createdAt: new Date().toISOString(), sourceHash, harnessCommit,
             sieveCommit: SCORING_COMMIT, versions: { ...VERSIONS, model: RETRIEVAL_MODEL, sieve: SCORING_COMMIT }, sieveConfig: SIEVE_CONFIG, limits: LIMITS,
             schedule: scoringSchedule(), workflow: "payments", fixtureRevision: "explicit-nonblank-callback-ids", node: process.version,
-            method: "Direct Sol chooses and executes a diagnostic command; the Jev arm proposes 3-5 eligible commands and a neutral rubric once per stage, then executes the exact highest-scoring selection returned by sieve_score. No decision files. An observer checks the first subsequent bash command. Same fixed tool schemas in both arms, not unmodified native Pi. Candidates may differ. Five continuous stages; no grading feedback or selective reruns.",
+            method: "Direct Sol handles actions itself; the adaptive arm delegates only substantial comparisons and prefers a known reusable profile. Zero scoring calls is allowed and reported. No candidate quota or decision files. An observer checks the first subsequent bash command. Same fixed tool schemas in both arms, not unmodified native Pi. Candidates may differ. Five continuous stages; no grading feedback or selective reruns.",
             cachePolicy: "Serial alternating pair order; native server caches cannot be cleared. Three repeats do not establish statistical significance.",
             publication: "Local only. No charts or public performance report." });
     }

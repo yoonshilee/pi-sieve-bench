@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import { performance } from "node:perf_hooks";
 import { Type } from "typebox";
 import { createAgentSession, DefaultResourceLoader, getAgentDir, ModelRuntime, SessionManager, SettingsManager, type ExtensionAPI, type ExtensionUIContext, type Skill } from "@earendil-works/pi-coding-agent";
-import { materialize, workflows, skillSpecs, toolSpecs, type WorkflowId } from "./fixtures.ts";
+import { materialize, workflows, skillSpecs, toolSpecs, paymentDecisionProfile, type WorkflowId } from "./fixtures.ts";
 import { grade } from "./grade.ts";
 import { sandboxTools } from "./sandbox.ts";
 import { addUsage, armConfig, LIMITS, newStage, sanitize, VERSIONS, RETRIEVAL_COMMIT, RETRIEVAL_QUERIES, SCORING_COMMIT, type Arm, type Run, type Stage } from "./metrics.ts";
@@ -157,7 +157,10 @@ export async function runWorkflow(options: {
                 pendingCommands.set(event.toolCallId, selection);
                 awaitingCommand = undefined;
             }
-            if (scoring && event.toolName === "sieve_score" && isRecord(event.args)) scoreInputs.set(event.toolCallId, { inputHash: decisionHash(event.args), options: Array.isArray(event.args.options) ? event.args.options.length : 0, levels: Array.isArray(event.args.criteria) ? event.args.criteria.length : 0, candidates: Array.isArray(event.args.options) ? event.args.options.filter(isRecord).flatMap(option => typeof option.id === "string" && typeof option.content === "string" ? [{ id: option.id, content: option.content }] : []) : [] });
+            if (scoring && event.toolName === "sieve_score" && isRecord(event.args)) {
+                const args = event.args.profile === "payment-diagnostic" ? paymentDecisionProfile : event.args;
+                scoreInputs.set(event.toolCallId, { inputHash: decisionHash(event.args), options: Array.isArray(args.options) ? args.options.length : 0, levels: Array.isArray(args.criteria) ? args.criteria.length : 0, candidates: Array.isArray(args.options) ? args.options.filter(isRecord).flatMap(option => typeof option.id === "string" && typeof option.content === "string" ? [{ id: option.id, content: option.content }] : []) : [] });
+            }
             if (event.toolName === "sieve_search" && retrieval) queryMatches.set(event.toolCallId, isRecord(event.args) && event.args.query === RETRIEVAL_QUERIES[current.stage - 1]);
             if (event.toolName === "sieve_search" && !retrieval)
                 current.recoveries++;

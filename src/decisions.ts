@@ -4,17 +4,17 @@ const isRecord = (value: unknown): value is Record<string, unknown> => value !==
 
 export function decisionHash(value: Record<string, unknown>): string {
     const options = Array.isArray(value.options) ? value.options.filter(isRecord).map(option => ({ id: option.id, content: option.content })) : [];
-    return createHash("sha256").update(JSON.stringify({ question: value.question, criteria: value.criteria, options })).digest("hex");
+    return createHash("sha256").update(JSON.stringify({ ...(typeof value.profile === "string" ? { profile: value.profile } : {}), question: value.question, criteria: value.criteria, options })).digest("hex");
 }
 
 export const commandHash = (command: string): string => createHash("sha256").update(command).digest("hex");
 
 export function decisionPrompt(delegated: boolean, task: string): string {
     const method = delegated
-        ? "Propose 3-5 distinct eligible shell commands, with each option content containing only its exact command. Define one neutral evaluation question and 3-5 shared ordered scoring levels. Supply concise facts, without choosing a winner or scoring the options yourself. Call sieve_score exactly once. Execute its selected.content unchanged as your next bash command, without reranking or substituting. If unavailable, report that no Jev decision was made; do not invent one."
-        : "Choose a useful next shell command using your own judgment and execute it. Do not call sieve_score; it is disabled in this condition. No explicit candidate list, rubric, or ranking is required.";
-    return `Complete the task below. After reading enough current project information, and before your first production-code change in this stage, choose and execute one useful next shell command. ${method}
-Only local, authorized, non-destructive commands are eligible: no network, installation, deployment, or cleanup. Do not execute every candidate to compare them. After this decision, finish the stage normally. Do not write benchmark decision files or extra scoring explanations.
+        ? "Use sieve_score only when multiple plausible actions require substantial evidence comparison or a wrong choice would cause significant rework. Skip obvious next steps, explicit commands, and routine tests. There is no scoring quota. A known reusable payment-diagnostic profile is listed in REFERENCES.md; inspect it if applicable and send concise current facts instead of rewriting its candidates and rubric. If no profile applies and a substantial decision warrants delegation, use inline options. Follow selected.content exactly without reranking. If unavailable, report no decision."
+        : "Use your own judgment for next actions. Do not call sieve_score; it is disabled in this condition.";
+    return `Complete the task below. ${method}
+Only local, authorized, non-destructive commands are eligible: no network, installation, deployment, or cleanup. Do not invent alternatives merely for scoring or write benchmark decision files.
 
 Task:
 ${task}`;

@@ -73,6 +73,11 @@ test("scoring pairs preserve inputs and tools, measure real SDK calls, and rejec
     assert.equal(summary.runs[1].jevInput, 500);
     assert.equal(summary.runs[0].jevInput, null);
     assert(summary.runs.every(run => run.validComparison));
+    const noDelegation = structuredClone(rows);
+    for (const stage of noDelegation[1].stages) stage.scoring = [];
+    const adaptive = scoringSummary(noDelegation);
+    assert(adaptive.runs[1].validComparison);
+    assert.equal(adaptive.runs[1].decisionsDelegated, 0);
     for (const failure of ["failed-task", "timeout", "wrong-selection", "no-execution", "wrong-command", "preselected-command"]) {
         const invalid = structuredClone(rows);
         const stage = invalid[1].stages[0];

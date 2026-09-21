@@ -18,58 +18,69 @@ and Luna measurements retain their original model identities. Changing the model
 requires a new batch ID. Earlier experiments are archival diagnostics, excluded
 from future release performance claims. Report and chart updates are deferred.
 
-## Local delegated-command comparison
+## Reused-profile decision probe (v0.5)
 
-The v0.4 experiment compares **direct Sol decisions** with **Jev-selected commands**,
-using Sol medium in both arms. Each completes the same five-stage payment workflow
-three times, serially in alternating pair order. Before editing production code
-in each stage, direct Sol chooses and executes a useful diagnostic command. The
-Jev arm supplies 3-5 eligible commands, facts, and a neutral shared rubric, calls
-`sieve_score` once, and executes the exact returned selection without reranking.
-Sieve picks the highest score; ties use input order. It does not execute commands.
+The first gate isolates one decision instead of rerunning long workflows. Six
+fictional cases use the same frozen eight-option profile and rubric. Two routine
+cases explicitly request a command; four evidence cases distinguish payment
+concurrency, tenant caching, date boundaries, and retry persistence. They each
+run three times with direct Sol and Sol delegating to Jev: **36 trials**.
 
-Both arms expose the same fixed tool definitions, skills, references, and code.
-Direct Sol uses `/sieve off`; it has no mandatory rubric, ranking, or decision-file
-writing. This control is not unmodified native Pi. An observer validates selection
-against supplied candidates and scores, then checks the **first subsequent Bash
-command**, whether its assistant message was generated after the Jev result,
-completion, and tool-error flag. A failing diagnostic command may be
-valid execution; task correctness is graded separately. No benchmark observer
-forces compliance. Hashes replace command text in saved observations.
+Both arms use Pi 0.86.1, openai-codex/gpt-5.6-sol, medium reasoning, identical
+fixed tool definitions, candidates, and facts. The direct arm selects an option.
+The delegated arm calls the real plugin with a profile name and supplied facts,
+then submits the returned ID and content unchanged. Candidates and rubric are
+not regenerated. One-time human profile authoring is outside the measurement; this
+probe represents reuse, not creation of a new profile for every task. Expected IDs are authored synthetic reference choices, excluded
+from model inputs; correctness is selection agreement, not solved coding tasks.
 
-This is an end-to-end intervention, including candidate-generation overhead, not
-a scorer-only comparison on identical candidate sets. Prompts cannot prove that
-the main model avoided choosing internally before delegation. Commands and rubrics
-can differ across repeats. Five fixed stages share a session and file changes;
-hidden grading gives no feedback. Limits are 5 minutes and 30 main-model requests
-per stage, with no automatic retries or selective reruns.
+The action sink validates the chosen command but **does not execute a shell
+command**. Time runs from the first prompt to that sink, including Jev and the
+main-model handoff. Initialization and a final acknowledgement are excluded; the
+session aborts at the measured endpoint. Main-model tokens, request counts, Jev
+usage, selection latency, handoff delay, protocol violations, and errors are saved.
+Raw prompts, model reasoning, and provider error bodies are not saved. Token
+counts are not charges; actual USD cost remains unknown.
 
-Keep the plugin adjacent at `../pi-sieve`, on the clean commit pinned by
-`SCORING_COMMIT` in `src/metrics.ts`, then run:
+Routine cases are negative controls: forcing delegation in this probe measures
+its floor cost, not the production calling policy. The four evidence cases still
+have short, authored facts and cannot establish general decision quality. Every
+trial uses a fresh session; pairs alternate order, serially, with no retries.
+Provider cache state cannot be reset. Each trial is limited to 90 seconds and four
+main-model requests. Jev has a 10-second deadline; production remains at 1.5 seconds.
+
+**Frozen exploratory gate:** all 12 evidence pairs must produce correct, valid
+choices, and the median paired delegated time must be at least 10% lower than
+direct Sol. Otherwise do not spend on another full workflow batch. Passing this
+gate only warrants a workflow trial; it does not prove speed or cost savings.
 
 ```sh
 npm run check
-npm run score -- decision-local-001
+npm run probe -- profile-probe-local-001
 ```
 
-The SDK integration test needs that checkout; it skips when absent. Live execution
-requires the exact clean commit and native Pi credentials. Jev uses a 10-second
-benchmark timeout; the production default remains 1.5 seconds. Saved results cannot
-establish production availability under that shorter deadline. Fixture callback
-contracts reject whitespace-only identifiers; historical fixtures are unchanged.
+Keep the exact clean plugin commit pinned by `SCORING_COMMIT` adjacent at
+`../pi-sieve`. Native Pi credentials resolve normally. Results and the frozen
+manifest go to `reports/<batch>/`; resumption preserves all existing attempts,
+including failed or interrupted ones. Changes and results stay local, without
+charts or public performance claims.
 
-Whitelisted results are saved under `reports/<batch>/`. Resume with the same batch
-ID; existing failed and completed attempts are preserved. Time includes model,
-tool, and Jev calls; initialization and grading are separate. Tokens distinguish
-uncached input, cached input, output, and available reasoning counts. Missing usage
-and actual charges remain null. Error diagnostics save categories only, never raw
-provider errors. Workspaces and raw artifacts remain ignored by Git.
+## Adaptive workflow comparison (v0.5)
 
-Speed ratios use only paired successful runs with valid observed execution. All
-failures remain in group summaries. Three repeats cannot establish significance;
-provider caches cannot be reset. Earlier v0.3 advisory-scoring runs and their
-transcription artifacts remain archival and are not pooled with v0.4. No charts
-or public performance claims are produced; changes stay in local commits.
+The workflow entry point now allows zero Jev calls. Sol delegates only substantial
+comparisons and prefers the known payment-diagnostic profile when applicable.
+Explicit commands, routine tests, and obvious steps execute directly. Both arms
+have the same files, references, tools, and profile. The benchmark reports the
+actual delegation count; zero calls do not demonstrate Jev benefit. Selected
+commands are checked against the first subsequent Bash call and must have been
+generated after the Jev response. Hidden stage grading remains unchanged.
+
+Run `npm run score -- adaptive-local-001` only after the decision gate warrants a
+full batch. It retains five continuous payment stages, three alternating paired
+repeats, 5-minute/30-request stage limits, and no grading feedback or selective
+reruns. Results from v0.3 advisory scoring and v0.4 forced per-stage delegation
+remain archival, with their original manifests and source commits; current
+summaries must not be used to reinterpret those historical protocols.
 
 ## Historical five-arm experiment
 

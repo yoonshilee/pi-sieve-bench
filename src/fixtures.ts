@@ -1,5 +1,14 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+export const paymentDecisionProfile = {
+    question: "Which action provides the most useful new evidence about the current payment uncertainty?",
+    criteria: ["Inapplicable or redundant", "Relevant indirect evidence", "Direct evidence distinguishing the remaining explanations"],
+    options: [
+        { id: "tests", content: "npm test" },
+        { id: "callers", content: "rg -n 'pay|handleWebhook' src test" },
+        { id: "state", content: "cat src/payments.ts src/store.ts" },
+    ],
+};
 export const WORKFLOW_IDS = ["payments", "tenant-api", "reconciliation", "incident"] as const;
 export type WorkflowId = typeof WORKFLOW_IDS[number];
 export type Workflow = {
@@ -213,6 +222,8 @@ export async function materialize(root: string, id: WorkflowId, scoring = false)
     const references = [...flow.rules, ...neighbors].map(([name, description, body]) => ({ kind: "memories", name, description, body })).concat(guides.map(([name, description, body]) => ({ kind: "guides", name, description, body })));
     files["REFERENCES.md"] = "# Reference catalog\n\n" + references.map(r => `- [${r.name}](.pi/sieve/${r.kind}/${r.name}.md): ${r.description}`).join("\n") + "\n\n# Fixed tool data\n\n" + toolSpecs.map(([name, description]) => `- [${name}](data/${name}.json): ${description}`).join("\n") + "\n";
     if (scoring) {
+        files[".pi/sieve/decisions/payment-diagnostic.json"] = JSON.stringify(paymentDecisionProfile, null, 2) + "\n";
+        files["REFERENCES.md"] += "\nReusable decision profile: [payment-diagnostic](.pi/sieve/decisions/payment-diagnostic.json). Review applicability before use; routine commands do not require scoring.\n";
         const eventRule = references.find(ref => ref.name === "webhook-events");
         if (eventRule) eventRule.body = eventRule.body.replace("An event has nonempty string id and chargeId and type 'payment.succeeded'.", "An event has string id and chargeId that are nonempty after trimming for validation, and type 'payment.succeeded'. Preserve the original identifiers.");
     }
