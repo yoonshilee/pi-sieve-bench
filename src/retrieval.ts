@@ -42,6 +42,7 @@ export function retrievalSummary(rows: Run[]) {
 }
 
 export async function reportRetrieval(directory: string, rows: Run[], plots = true): Promise<void> {
+    rows = RETRIEVAL_ARMS.flatMap(arm => rows.filter(run => run.arm === arm));
     const summary = retrievalSummary(rows);
     await atomicJson(join(directory, "summary.json"), summary);
     await writeFile(join(directory, "runs.jsonl"), rows.map(run => JSON.stringify(run)).join("\n") + "\n");
@@ -51,6 +52,8 @@ export async function reportRetrieval(directory: string, rows: Run[], plots = tr
     const fmt = (value: number | null, digits = 0) => value === null ? "N/A" : value.toFixed(digits);
     let markdown = `# On-demand retrieval comparison\n\nOne payments workflow per condition, five consecutive stages. Pi ${VERSIONS.pi}; ${VERSIONS.provider}/${VERSIONS.model}; ${VERSIONS.thinking}; Jev ${VERSIONS.jev}; Sieve ${RETRIEVAL_COMMIT}.\n\nRun dates (UTC): ${[...new Set(rows.map(run => run.startedAt.slice(0, 10)))].join(", ")}. [Frozen manifest](manifest.json).\n\n`;
     markdown += "Both conditions load the same plugin and fixed tool schema. Local uses /sieve off; Jev uses /sieve on. Each stage explicitly requests the same fixed retrieval query before the same coding task; additional reads are allowed. The query requirement measures a controlled retrieval workflow, not spontaneous tool adoption. The shared project config uses a 10-second Jev timeout, not the 1.5-second production default. Initial file hashes must match.\n\n";
+    try { markdown += (await readFile(join(directory, "notes.md"), "utf8")).trim() + "\n\n"; }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
     markdown += "| Condition | Success | Stage checks | Seconds | Main requests | Retrieval calls | Main tokens | Jev fallbacks / requests |\n| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n";
     for (const g of summary.groups) markdown += `| ${g.arm} | ${g.successes}/1 | ${fmt(g.meanScore * 100, 1)}% | ${fmt(g.medianSeconds, 3)} | ${g.requests} | ${g.retrievalCalls} | ${fmt(g.usage.totalTokens)} | ${g.fallbacks}/${g.jevRequests} |\n`;
     markdown += "\n## Usage and retrieval\n\n| Condition | Uncached input | Cached input | Output | Cache share of input | Jev input / output | First-search required recall | Returned characters |\n| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n";

@@ -1,0 +1,34 @@
+{
+  "check": "invalid-event-no-mutation",
+  "stages": [
+    4,
+    5
+  ],
+  "probe": {
+    "id": "probe-event",
+    "chargeId": " ",
+    "type": "payment.succeeded"
+  },
+  "probeCode": "import {createStore} from './src/store.ts'; import {handleWebhook} from './src/payments.ts'; const store=createStore(); let rejected=false; let errorCode=null; try {await handleWebhook(store,{id:'probe-event',chargeId:' ',type:'payment.succeeded'});} catch(error) {rejected=true;errorCode=error.message==='INVALID_EVENT'?'INVALID_EVENT':'other';} console.log(JSON.stringify({rejected,errorCode,events:store.events.size,receipts:store.receipts.length}));",
+  "outcomes": [
+    {
+      "arm": "retrieval-local",
+      "sourceFile": "src/payments.ts",
+      "sha256": "618263157dad76046e54f43840fa900489232c09f48e1365953580787c12e6cd",
+      "rejected": true,
+      "errorCode": "INVALID_EVENT",
+      "events": 0,
+      "receipts": 0
+    },
+    {
+      "arm": "retrieval-jev",
+      "sourceFile": "src/payments.ts",
+      "sha256": "2c9b3de84b027b0fba16c9a5ac28b52478654f7267b11488b1a019df19e8372e",
+      "rejected": false,
+      "errorCode": null,
+      "events": 1,
+      "receipts": 1
+    }
+  ],
+  "interpretation": "The frozen grader requires nonblank callback IDs, while the reference says nonempty without explicitly requiring trimming. Original verdicts are retained. This ambiguity and one pair prevent causal attribution to Jev. Both callback references were returned in stage 4."
+}

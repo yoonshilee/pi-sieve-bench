@@ -1,0 +1,3 @@
+arm,success,seconds,stageScore,requiredRecall,requests,retrievalCalls,retrievedChars,input,cacheRead,output,totalTokens,jevRequests,jevInput,jevOutput,fallbacks
+retrieval-local,true,350.412,1,1,33,5,13223,38539,440704,8002,487245,0,,,0
+retrieval-jev,false,390.522,0.9732142857142858,0.9,34,5,11350,30615,449536,8704,488855,5,17453,2490,0

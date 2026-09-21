@@ -67,8 +67,12 @@ test("paired retrieval uses identical files and queries, preserves tools, and re
     const failed = structuredClone(rows);
     failed[1].stages[0].retrievals![0].reason = "timeout";
     assert.equal(retrievalSummary(failed).matchedSuccessPairs, 0);
-    await reportRetrieval(temporary, rows, false);
+    await writeFile(join(temporary, "notes.md"), "Frozen grader limitations are retained.\n");
+    await reportRetrieval(temporary, [...rows].reverse(), false);
     const report = await readFile(join(temporary, "README.md"), "utf8");
+    const saved = JSON.parse(await readFile(join(temporary, "summary.json"), "utf8"));
+    assert.deepEqual(saved.groups.map((group: { arm: string }) => group.arm), RETRIEVAL_ARMS);
+    assert(report.includes("Frozen grader limitations are retained."));
     assert(report.includes("First-search required recall"));
     assert(!report.includes("Historical v0.1"));
     assert(!JSON.stringify(summary).includes(temporary));

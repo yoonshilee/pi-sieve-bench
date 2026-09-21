@@ -1,0 +1,63 @@
+{
+  "batch": "retrieval-20260921-v02",
+  "experiment": "on-demand-retrieval-v0.2",
+  "kind": "pilot",
+  "createdAt": "2026-09-21T09:46:02.701Z",
+  "sourceHash": "3df996284a436f7c4ed5ea752d294f0d7c8a9b91aa680d6d1503e5016167f564",
+  "harnessCommit": "e632afd9ac9185d02c44f504e03fc3ddfc35d537",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-6-astra",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "sieve": "ba996c7bfceddbee6fa75e03a8f4a323052e8d3c"
+  },
+  "sieveConfig": {
+    "timeoutMs": 10000
+  },
+  "limits": {
+    "stageMs": 300000,
+    "modelRequests": 30
+  },
+  "schedule": [
+    "retrieval-local",
+    "retrieval-jev"
+  ],
+  "queries": [
+    "duplicate payment charges after timeout and retry active idempotency contract",
+    "sequential payment retries request validation gateway failure retry eligibility",
+    "concurrent payment requests in-flight sharing conflicts independent keys failed reservations",
+    "callback event validation duplicate delivery distinct events receipt uniqueness",
+    "payment regression idempotency validation failures concurrency callback events receipts"
+  ],
+  "requiredReferences": [
+    [
+      "payment-idempotency"
+    ],
+    [
+      "payment-idempotency",
+      "payment-validation",
+      "gateway-failures"
+    ],
+    [
+      "payment-idempotency",
+      "payment-concurrency",
+      "gateway-failures"
+    ],
+    [
+      "webhook-events",
+      "webhook-receipts"
+    ],
+    [
+      "payment-idempotency",
+      "payment-validation",
+      "gateway-failures",
+      "payment-concurrency",
+      "webhook-events",
+      "webhook-receipts"
+    ]
+  ],
+  "node": "v22.23.2",
+  "cachePolicy": "Local first, Jev second. No explicit warming. Provider caches cannot be cleared. Prior experiments may affect caching."
+}

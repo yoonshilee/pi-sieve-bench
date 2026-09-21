@@ -1,0 +1,109 @@
+{
+  "experiment": "on-demand-retrieval-v0.2",
+  "groups": [
+    {
+      "arm": "retrieval-local",
+      "workflow": "payments",
+      "model": "gpt-6-astra",
+      "status": "completed",
+      "success": true,
+      "n": 1,
+      "successes": 1,
+      "medianSeconds": 350.412,
+      "initMs": 28,
+      "gradeMs": 809,
+      "meanScore": 1,
+      "stageScores": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "requiredRecallByStage": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "meanRequiredRecall": 1,
+      "requests": 33,
+      "retrievalCalls": 5,
+      "retrievedChars": 13223,
+      "retrievalMedianMs": 36,
+      "validRetrieval": true,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "jevRequests": 0,
+      "jevInputTokens": null,
+      "jevOutputTokens": null,
+      "usage": {
+        "input": 38539,
+        "output": 8002,
+        "cacheRead": 440704,
+        "cacheWrite": 0,
+        "reasoning": 135,
+        "totalTokens": 487245
+      },
+      "medianInput": 38539,
+      "medianCached": 440704,
+      "medianOutput": 8002,
+      "cacheReadShare": 0.9195835932919209
+    },
+    {
+      "arm": "retrieval-jev",
+      "workflow": "payments",
+      "model": "gpt-6-astra",
+      "status": "completed",
+      "success": false,
+      "n": 1,
+      "successes": 0,
+      "medianSeconds": 390.522,
+      "initMs": 18,
+      "gradeMs": 805,
+      "meanScore": 0.9732142857142858,
+      "stageScores": [
+        1,
+        1,
+        1,
+        0.9285714285714286,
+        0.9375
+      ],
+      "requiredRecallByStage": [
+        1,
+        1,
+        0.6666666666666666,
+        1,
+        0.8333333333333334
+      ],
+      "meanRequiredRecall": 0.9,
+      "requests": 34,
+      "retrievalCalls": 5,
+      "retrievedChars": 11350,
+      "retrievalMedianMs": 2318,
+      "validRetrieval": true,
+      "fallbacks": 0,
+      "fallbackReasons": [],
+      "jevRequests": 5,
+      "jevInputTokens": 17453,
+      "jevOutputTokens": 2490,
+      "usage": {
+        "input": 30615,
+        "output": 8704,
+        "cacheRead": 449536,
+        "cacheWrite": 0,
+        "reasoning": 142,
+        "totalTokens": 488855
+      },
+      "medianInput": 30615,
+      "medianCached": 449536,
+      "medianOutput": 8704,
+      "cacheReadShare": 0.9362388082082511
+    }
+  ],
+  "reviewedChecks": 0,
+  "matchedSuccessPairs": 0,
+  "baselineOverJevSeconds": null,
+  "actualCostUsd": null
+}

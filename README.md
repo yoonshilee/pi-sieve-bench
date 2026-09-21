@@ -8,12 +8,13 @@ credentials. Live runs consume the operator's own model and TypeSafe allowance.
 This repository contains the complete experimental setup, results, failure
 analysis, and sanitized run data. The [Pi Sieve README](https://github.com/yoonshilee/pi-sieve#preliminary-benchmark)
 shows a brief visual comparison. **Only pilot data is available; no formal batch
-has been run.** All saved measurements below use the historical v0.1 context
-filtering implementation at `7d54c8f`. They do not evaluate v0.2 on-demand retrieval.
+has been run.** The latest pair evaluates v0.2 on-demand retrieval at `ba996c7`.
+Earlier five-arm pilots evaluate historical v0.1 context filtering at `7d54c8f`;
+their results are kept separate.
 
-[Experimental setup](#experiment) · [Results](#results) · [Reproduction](#setup-and-commands)
+[Retrieval comparison](#on-demand-retrieval-comparison) · [Historical setup](#historical-five-arm-experiment) · [Results](#results) · [Reproduction](#setup-and-commands)
 
-## Experiment
+## Historical five-arm experiment
 
 | Setting | Fixed value |
 | --- | --- |
@@ -186,11 +187,61 @@ CI performs offline checks and plot generation without real credentials.
 
 ## Results
 
-No formal benchmark has been run. The revised five-arm pilot below uses a 10-second
-Jev timeout and the corrected grader, frozen before execution. The original pilot
-is retained separately as an availability finding.
+No formal benchmark has been run. The v0.2 pair and historical v0.1 pilots below
+are separate experiments and must not be pooled.
 
-### Revised pilot: 2026-09-21, 10-second timeout
+### On-demand retrieval: 2026-09-21, v0.2
+
+**This pair did not show a speed or task-quality gain from Jev selection.** Both
+conditions used Astra medium, identical starting files and fixed queries, five
+stages, and the same Sieve tool. All five Jev calls returned HTTP 200 and valid
+selections, with zero fallbacks. The benchmark used a 10-second timeout; the
+production default remains 1.5 seconds.
+
+| Metric | Local retrieval | Jev retrieval |
+| --- | ---: | ---: |
+| Workflow success under frozen grader | 1/1 | 0/1 |
+| Mean stage acceptance | 100.0% | 97.3% |
+| Workflow seconds | 350.412 | 390.522 |
+| Main-model requests | 33 | 34 |
+| First-search required-reference recall | 100.0% | 90.0% |
+| Returned search-result characters | 13,223 | 11,350 |
+| Median retrieval milliseconds | 36 | 2,318 |
+| Uncached main input tokens | 38,539 | 30,615 |
+| Cached main input tokens | 440,704 | 449,536 |
+| Main output tokens | 8,002 | 8,704 |
+| Total main tokens | 487,245 | 488,855 |
+| Jev input / output tokens | N/A | 17,453 / 2,490 |
+
+Jev took 40.110 seconds longer (+11.4%), returned 14.2% fewer search-result characters
+(including headings and formatting), and
+used 20.6% less uncached main input. It did not reduce main requests or total main
+tokens (+0.3%). Retrieval added about 13.5 seconds in total; the remaining elapsed
+difference includes different model/tool trajectories and service variation.
+Both conditions retained high reported input cache shares (92.0% and 93.6%);
+this is not a direct KV-cache measurement or evidence of a causal cache benefit.
+Actual dollar charges are unavailable, and the extra Jev use prevents treating
+reduced uncached input alone as a cost-saving result.
+
+The Jev run failed `invalid-event-no-mutation` in stages 4 and 5: it accepted a
+whitespace-only callback charge ID and mutated state. Both required callback
+references were returned. **The reference says "nonempty" without explicitly
+requiring trimming, while the frozen grader expects "nonblank".** This ambiguity
+limits the quality comparison; original verdicts are retained, and the failure
+cannot be attributed to Jev from this pair. The `gateway-failures` reference was
+omitted at stages 3 and 5, although related retry checks passed.
+
+There is no successful matched pair for a speedup ratio. One pair, local first,
+cannot establish statistical significance; provider caches, order, and model
+trajectories were not controlled. This result suggests that the already effective
+local retrieval in this small fixture left little room for Jev to save work.
+No additional model runs were used to select a better outcome.
+
+[Complete retrieval report](reports/retrieval-20260921-v02/README.md) · [CSV](reports/retrieval-20260921-v02/runs.csv) · [JSONL](reports/retrieval-20260921-v02/runs.jsonl) · [Failure reproduction](reports/retrieval-20260921-v02/failure-analysis.json)
+
+![One v0.2 local versus Jev retrieval pair](reports/retrieval-20260921-v02/benchmark.png)
+
+### Historical v0.1 revised pilot: 2026-09-21, 10-second timeout
 
 **Jev returned valid selections for all 10 calls, with zero fallbacks.** Each arm has one payment workflow; this is preliminary evidence, not a general performance claim.
 
@@ -216,7 +267,7 @@ Luna Sieve passed all final checks but took 622.971 seconds and 462,932 tokens. 
 
 ![Revised pilot with all ten Jev selections successful](reports/pilot-20260921-jev10s/benchmark.png)
 
-### Initial pilot: 2026-09-21, 1.5-second timeout
+### Historical v0.1 initial pilot: 2026-09-21, 1.5-second timeout
 
 | Arm | Task success | Stage checks | Workflow seconds | Main-model tokens | Jev success / calls |
 | --- | ---: | ---: | ---: | ---: | ---: |
