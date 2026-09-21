@@ -9,7 +9,7 @@ import { materialize, workflows, skillSpecs, toolSpecs, type WorkflowId } from "
 import { grade } from "./grade.ts";
 import { sandboxTools } from "./sandbox.ts";
 import { addUsage, armConfig, LIMITS, newStage, sanitize, VERSIONS, RETRIEVAL_COMMIT, RETRIEVAL_QUERIES, SCORING_COMMIT, type Arm, type Run, type Stage } from "./metrics.ts";
-import { decisionHash, decisionPrompt, inspectDecision } from "./decisions.ts";
+import { commandHash, decisionHash, decisionPrompt, failureKind } from "./decisions.ts";
 const require = createRequire(import.meta.url);
 const sievePath = join(require.resolve("pi-sieve/package.json"), "..", "src", "index.ts");
 const retrievalPath = join(require.resolve("pi-sieve-retrieval/package.json"), "..", "src", "index.ts");
@@ -139,34 +139,52 @@ export async function runWorkflow(options: {
                 }
                 catch { } } } as ExtensionUIContext });
     const queryMatches = new Map<string, boolean>();
-    const scoreInputs = new Map<string, { inputHash: string; options: number; levels: number }>();
-    const commands = new Set<string>();
-    const pendingCommands = new Map<string, string>();
+    const scoreInputs = new Map<string, { inputHash: string; options: number; levels: number; candidates: { id: string; content: string }[] }>();
+    type Selection = NonNullable<Stage["scoring"]>[number];
+    let assistantSequence = 0;
+    let awaitingCommand: { selection: Selection; returnedAt: number; assistantSequence: number } | undefined;
+    const pendingCommands = new Map<string, Selection>();
     const unsubscribe = session.subscribe(event => {
         if (!current)
             return;
         if (event.type === "tool_execution_start") {
             current.toolCalls++;
-            if (scoring && event.toolName === "bash" && isRecord(event.args) && typeof event.args.command === "string" && (options.arm === "score-self" || current.scoring?.some(call => call.reason === "none"))) pendingCommands.set(event.toolCallId, event.args.command);
-            if (scoring && event.toolName === "sieve_score" && isRecord(event.args)) scoreInputs.set(event.toolCallId, { inputHash: decisionHash(event.args), options: Array.isArray(event.args.options) ? event.args.options.length : 0, levels: Array.isArray(event.args.criteria) ? event.args.criteria.length : 0 });
+            if (scoring && event.toolName === "bash" && awaitingCommand) {
+                const { selection, returnedAt } = awaitingCommand;
+                selection.nextCommandMatched = isRecord(event.args) && typeof event.args.command === "string" && commandHash(event.args.command) === selection.selectedCommandHash;
+                selection.commandGeneratedAfterResponse = assistantSequence > awaitingCommand.assistantSequence;
+                selection.dispatchMs = Math.round(performance.now() - returnedAt);
+                pendingCommands.set(event.toolCallId, selection);
+                awaitingCommand = undefined;
+            }
+            if (scoring && event.toolName === "sieve_score" && isRecord(event.args)) scoreInputs.set(event.toolCallId, { inputHash: decisionHash(event.args), options: Array.isArray(event.args.options) ? event.args.options.length : 0, levels: Array.isArray(event.args.criteria) ? event.args.criteria.length : 0, candidates: Array.isArray(event.args.options) ? event.args.options.filter(isRecord).flatMap(option => typeof option.id === "string" && typeof option.content === "string" ? [{ id: option.id, content: option.content }] : []) : [] });
             if (event.toolName === "sieve_search" && retrieval) queryMatches.set(event.toolCallId, isRecord(event.args) && event.args.query === RETRIEVAL_QUERIES[current.stage - 1]);
             if (event.toolName === "sieve_search" && !retrieval)
                 current.recoveries++;
         }
         if (event.type === "tool_execution_end" && event.toolName === "bash") {
-            const command = pendingCommands.get(event.toolCallId);
-            if (command !== undefined) commands.add(command);
+            const selection = pendingCommands.get(event.toolCallId);
+            if (selection) { selection.executionCompleted = true; selection.executionError = event.isError; }
             pendingCommands.delete(event.toolCallId);
         }
         if (event.type === "tool_execution_end" && event.toolName === "sieve_score" && scoring) {
             const result: unknown = event.result;
             const details = isRecord(result) && isRecord(result.details) ? result.details : {};
-            const shape = scoreInputs.get(event.toolCallId) ?? { inputHash: "", options: 0, levels: 0 };
+            const shape = scoreInputs.get(event.toolCallId) ?? { inputHash: "", options: 0, levels: 0, candidates: [] };
             current.scoring ??= [];
             const reasons = ["none", "disabled", "missing_key", "invalid_input", "invalid_config", "untrusted_project", "request_too_large", "timeout", "cancelled", "service_error", "invalid_response"];
-            current.scoring.push({ ...shape, reason: typeof details.reason === "string" && reasons.includes(details.reason) ? details.reason : "unknown",
+            const selected = isRecord(details.selected) ? details.selected : {};
+            const results = Array.isArray(details.results) ? details.results.filter(isRecord).flatMap(item => typeof item.id === "string" && typeof item.score === "number" && typeof item.confidence === "number" ? [{ id: sanitize(item.id, root), score: item.score, confidence: item.confidence }] : []) : [];
+            const winner = results.reduce<typeof results[number] | undefined>((best, item) => !best || item.score > best.score ? item : best, undefined);
+            const selection: Selection = { inputHash: shape.inputHash, options: shape.options, levels: shape.levels,
+                selectedId: typeof selected.id === "string" ? sanitize(selected.id, root) : null,
+                selectedCommandHash: typeof selected.content === "string" ? commandHash(selected.content) : null,
+                selectionValid: details.available === true && winner !== undefined && winner.id === selected.id && shape.candidates.some(option => option.id === selected.id && option.content === selected.content),
+                nextCommandMatched: null, commandGeneratedAfterResponse: null, executionCompleted: false, executionError: null, dispatchMs: null, reason: typeof details.reason === "string" && reasons.includes(details.reason) ? details.reason : "unknown",
                 elapsedMs: typeof details.elapsedMs === "number" ? details.elapsedMs : null,
-                results: Array.isArray(details.results) ? details.results.filter(isRecord).flatMap(item => typeof item.id === "string" && typeof item.score === "number" && typeof item.confidence === "number" ? [{ id: sanitize(item.id, root), score: item.score, confidence: item.confidence }] : []) : [] });
+                results };
+            current.scoring.push(selection);
+            if (selection.selectionValid) awaitingCommand = { selection, returnedAt: performance.now(), assistantSequence };
             scoreInputs.delete(event.toolCallId);
         }
         if (event.type === "tool_execution_end" && event.toolName === "sieve_search" && retrieval) {
@@ -188,12 +206,15 @@ export async function runWorkflow(options: {
         if (event.type === "tool_execution_end" && event.isError)
             current.toolErrors++;
         if (event.type === "message_end" && event.message.role === "assistant") {
+            assistantSequence++;
             const msg = event.message;
             // Providers may emit all-zero placeholders when a request fails without usage.
             if (!["error", "aborted"].includes(msg.stopReason) || Object.values(msg.usage).some(v => typeof v === "number" && v > 0))
                 addUsage(current.usage, msg.usage);
-            if (msg.stopReason === "error" && current.status === "running")
+            if (msg.stopReason === "error" && current.status === "running") {
                 current.status = "provider_error";
+                current.failure = { source: "assistant_error", kind: failureKind(msg.errorMessage) };
+            }
             if (msg.stopReason === "aborted" && current.status === "running")
                 current.status = "aborted";
             if (msg.stopReason === "length" && current.status === "running")
@@ -241,7 +262,7 @@ export async function runWorkflow(options: {
         for (let index = 0; index < 5; index++) {
             current = newStage(index + 1);
             if (retrieval) current.retrievals = [];
-            if (scoring) { current.scoring = []; commands.clear(); pendingCommands.clear(); }
+            if (scoring) { current.scoring = []; awaitingCommand = undefined; scoreInputs.clear(); pendingCommands.clear(); }
             run.stages.push(current);
             await atomicJson(options.record, run);
             const start = performance.now();
@@ -251,14 +272,16 @@ export async function runWorkflow(options: {
             } }, LIMITS.stageMs);
             try {
                 const prompt = workflows[options.workflow].stages[index];
-                await session.prompt(scoring ? decisionPrompt(index + 1, options.arm === "score-jev", prompt) : retrieval ? `First call sieve_search with this exact query: ${JSON.stringify(RETRIEVAL_QUERIES[index])}. Then complete the task below. You may read additional references if needed.\n\n${prompt}` : prompt);
+                await session.prompt(scoring ? decisionPrompt(options.arm === "score-jev", prompt) : retrieval ? `First call sieve_search with this exact query: ${JSON.stringify(RETRIEVAL_QUERIES[index])}. Then complete the task below. You may read additional references if needed.\n\n${prompt}` : prompt);
                 await session.waitForIdle();
                 if (current.status === "running")
                     current.status = "completed";
             }
-            catch {
-                if (current.status === "running")
-                    current.status = "provider_error";
+            catch (error) {
+                if (current.status === "running") {
+                    current.failure = { source: "session_exception", kind: failureKind(error) };
+                    current.status = current.failure.kind === "unknown" ? "runner_error" : "provider_error";
+                }
             }
             finally {
                 clearTimeout(timer);
@@ -269,7 +292,6 @@ export async function runWorkflow(options: {
             await Promise.allSettled([...pending]);
             const grading = performance.now();
             current.checks = await grade(root, options.workflow, index + 1, options.offline);
-            if (scoring) current.decision = await inspectDecision(root, index + 1, commands);
             current.gradeMs = Math.round(performance.now() - grading);
             run.elapsedMs += current.elapsedMs;
             run.gradeMs += current.gradeMs;

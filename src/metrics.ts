@@ -5,7 +5,7 @@ export const RETRIEVAL_ARMS = ["retrieval-local", "retrieval-jev"] as const;
 export const RETRIEVAL_COMMIT = "ba996c7bfceddbee6fa75e03a8f4a323052e8d3c";
 export const RETRIEVAL_MODEL = "gpt-5.6-sol";
 export const SCORING_ARMS = ["score-self", "score-jev"] as const;
-export const SCORING_COMMIT = "2632a4f3275be31b99dd979f1bc9858f6f8406c4";
+export const SCORING_COMMIT = "839ee849b1de4b135d852b66efaf2401a8eae396";
 export type Arm = typeof ARMS[number] | typeof RETRIEVAL_ARMS[number] | typeof SCORING_ARMS[number];
 export const RETRIEVAL_QUERIES = [
     "duplicate payment charges after timeout and retry active idempotency contract",
@@ -61,7 +61,8 @@ export type Stage = {
         responses?: { httpStatus: number | null; headersMs: number; errorKind: "aborted" | "network_error" | null }[];
     };
     retrievals?: { queryMatched: boolean; reason: string; elapsedMs: number | null; selected: number | null; resultChars: number; names: string[] }[];
-    scoring?: { inputHash: string; reason: string; options: number; levels: number; elapsedMs: number | null; results: { id: string; score: number; confidence: number }[] }[];
+    failure?: { source: "assistant_error" | "session_exception"; kind: "rate_limit" | "authentication" | "context_limit" | "network" | "unknown" };
+    scoring?: { selectedId?: string | null; selectedCommandHash?: string | null; selectionValid?: boolean; nextCommandMatched?: boolean | null; commandGeneratedAfterResponse?: boolean | null; executionCompleted?: boolean; executionError?: boolean | null; dispatchMs?: number | null; inputHash: string; reason: string; options: number; levels: number; elapsedMs: number | null; results: { id: string; score: number; confidence: number }[] }[];
     decision?: { inputHash: string | null; scoringAvailable: boolean; valid: boolean; executedSelection: boolean; options: number; levels: number; selectedId: string | null; selectedScore: number | null };
     sieve: Record<string, string | number | boolean> | null;
     answer: string;

@@ -12,9 +12,8 @@ export function scoringSummary(rows: Run[]) {
         const usage = emptyUsage();
         for (const stage of run.stages) addUsage(usage, stage.usage);
         const selections = run.stages.flatMap(stage => stage.scoring ?? []);
-        const validDecisions = run.stages.length === 5 && run.stages.every(stage => stage.decision?.valid && stage.decision.executedSelection);
-        const validScoring = run.arm === "score-self" ? selections.length === 0 && run.stages.every(stage => !stage.decision?.scoringAvailable) : run.stages.length === 5 && run.stages.every(stage =>
-            stage.scoring?.length === 1 && stage.scoring[0].reason === "none" && stage.decision?.scoringAvailable && stage.scoring[0].inputHash === stage.decision.inputHash && stage.scoring[0].results.some(result => result.id === stage.decision?.selectedId && Math.abs(result.score - (stage.decision.selectedScore ?? -1)) < 0.000001));
+        const validDecisions = run.stages.length === 5 && (run.arm === "score-self" || run.stages.every(stage => stage.scoring?.length === 1 && stage.scoring[0].selectionValid && stage.scoring[0].nextCommandMatched && stage.scoring[0].commandGeneratedAfterResponse && stage.scoring[0].executionCompleted));
+        const validScoring = run.arm === "score-self" ? selections.length === 0 : run.stages.length === 5 && run.stages.every(stage => stage.scoring?.length === 1 && stage.scoring[0].reason === "none");
         const jevTokens = (field: "inputTokens" | "outputTokens") => {
             const values = run.stages.flatMap(stage => stage.jev[field] === null ? [] : [stage.jev[field]]);
             return values.length ? values.reduce((sum, value) => sum + value, 0) : null;
@@ -44,7 +43,7 @@ export function scoringSummary(rows: Run[]) {
         const baseline = runs.find(other => other.arm === "score-self" && other.repeat === run.repeat && other.success && other.validComparison);
         return baseline && run.seconds > 0 ? [baseline.seconds / run.seconds] : [];
     });
-    return { experiment: "caller-defined-command-scoring-v0.3", runs, groups, matchedSuccessPairs: pairedRatios.length,
+    return { experiment: "delegated-command-choice-v0.4", runs, groups, matchedSuccessPairs: pairedRatios.length,
         medianBaselineOverJev: median(pairedRatios), actualCostUsd: null };
 }
 
@@ -59,10 +58,10 @@ export async function runScoringBatch(batch: string, sourceHash: string, harness
         if (prior.sourceHash !== sourceHash || prior.sieveCommit !== SCORING_COMMIT) throw new Error("Cannot resume a batch with changed experiment code.");
     } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-        await atomicJson(manifestPath, { experiment: "caller-defined-command-scoring-v0.3", batch, createdAt: new Date().toISOString(), sourceHash, harnessCommit,
+        await atomicJson(manifestPath, { experiment: "delegated-command-choice-v0.4", batch, createdAt: new Date().toISOString(), sourceHash, harnessCommit,
             sieveCommit: SCORING_COMMIT, versions: { ...VERSIONS, model: RETRIEVAL_MODEL, sieve: SCORING_COMMIT }, sieveConfig: SIEVE_CONFIG, limits: LIMITS,
             schedule: scoringSchedule(), workflow: "payments", fixtureRevision: "explicit-nonblank-callback-ids", node: process.version,
-            method: "Each model authors 3-5 command candidates and a shared rubric once per stage, then scores itself or calls real sieve_score. Both record and execute their chosen command. Candidate sets may differ. Five continuous stages per run; no grading feedback. No selective reruns.",
+            method: "Direct Sol chooses and executes a diagnostic command; the Jev arm proposes 3-5 eligible commands and a neutral rubric once per stage, then executes the exact highest-scoring selection returned by sieve_score. No decision files. An observer checks the first subsequent bash command. Same fixed tool schemas in both arms, not unmodified native Pi. Candidates may differ. Five continuous stages; no grading feedback or selective reruns.",
             cachePolicy: "Serial alternating pair order; native server caches cannot be cleared. Three repeats do not establish statistical significance.",
             publication: "Local only. No charts or public performance report." });
     }

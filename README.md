@@ -18,49 +18,58 @@ and Luna measurements retain their original model identities. Changing the model
 requires a new batch ID. Earlier experiments are archival diagnostics, excluded
 from future release performance claims. Report and chart updates are deferred.
 
-## Local command-scoring comparison
+## Local delegated-command comparison
 
-The v0.3 experiment compares Sol scoring its own command candidates with Sol
-calling `sieve_score` for Jev scores. Each arm completes the same five-stage
-payment workflow three times. Pair order alternates; runs are serial. In each
-stage the model proposes 3-5 commands and an ordered rubric, records one scoring
-decision, and executes its chosen command. Candidates are model-generated and
-can differ across arms. This tests end-to-end delegation, not the accuracy of
-both scorers on identical candidate sets. No command executes inside `sieve_score`.
+The v0.4 experiment compares **direct Sol decisions** with **Jev-selected commands**,
+using Sol medium in both arms. Each completes the same five-stage payment workflow
+three times, serially in alternating pair order. Before editing production code
+in each stage, direct Sol chooses and executes a useful diagnostic command. The
+Jev arm supplies 3-5 eligible commands, facts, and a neutral shared rubric, calls
+`sieve_score` once, and executes the exact returned selection without reranking.
+Sieve picks the highest score; ties use input order. It does not execute commands.
 
-Both arms expose the same tools, skills, references, and fixed definitions.
-The self-scoring arm turns Jev off. The other uses real Jev, a 10-second benchmark
-timeout, and no retries. The plugin's 1.5-second production default is unchanged.
-Payment callback contracts explicitly reject whitespace-only identifiers in
-this fixture revision; historical fixtures are unchanged. Hidden checks receive
-no scoring artifacts, and the model never receives hidden check results.
+Both arms expose the same fixed tool definitions, skills, references, and code.
+Direct Sol uses `/sieve off`; it has no mandatory rubric, ranking, or decision-file
+writing. This control is not unmodified native Pi. An observer validates selection
+against supplied candidates and scores, then checks the **first subsequent Bash
+command**, whether its assistant message was generated after the Jev result,
+completion, and tool-error flag. A failing diagnostic command may be
+valid execution; task correctness is graded separately. No benchmark observer
+forces compliance. Hashes replace command text in saved observations.
 
-Keep the v0.3 plugin checkout adjacent at `../pi-sieve`, on the clean commit
-pinned by `SCORING_COMMIT` in `src/metrics.ts`, then run:
+This is an end-to-end intervention, including candidate-generation overhead, not
+a scorer-only comparison on identical candidate sets. Prompts cannot prove that
+the main model avoided choosing internally before delegation. Commands and rubrics
+can differ across repeats. Five fixed stages share a session and file changes;
+hidden grading gives no feedback. Limits are 5 minutes and 30 main-model requests
+per stage, with no automatic retries or selective reruns.
+
+Keep the plugin adjacent at `../pi-sieve`, on the clean commit pinned by
+`SCORING_COMMIT` in `src/metrics.ts`, then run:
 
 ```sh
 npm run check
-npm run score -- score-local-001
+npm run score -- decision-local-001
 ```
 
-The new SDK integration test requires that local checkout and reports a skip
-when it is absent. The live command requires the exact clean commit. Results
-are saved under `reports/<batch>/` as whitelisted JSON, without charts. Resume
-with the same batch ID; completed and failed attempts are preserved. Timing
-includes model, tool, and Jev calls, excluding initialization and hidden grading.
-Token counts include separately reported uncached input, cached input, and
-output; unknown usage and actual charges remain null. Private workspaces retain
-the decision artifacts locally and are ignored by Git.
+The SDK integration test needs that checkout; it skips when absent. Live execution
+requires the exact clean commit and native Pi credentials. Jev uses a 10-second
+benchmark timeout; the production default remains 1.5 seconds. Saved results cannot
+establish production availability under that shorter deadline. Fixture callback
+contracts reject whitespace-only identifiers; historical fixtures are unchanged.
 
-Decision validation checks the rubric/candidate hash, selected score, and a
-matching bash attempt after the Jev response. This verifies observable protocol
-compliance; it cannot prove the model avoided private internal scoring. Final
-success and independent stage checks measure task quality. Speed ratios include
-only matched successful runs with valid protocol records. Three repeats cannot
-establish statistical significance, and provider caching cannot be reset.
+Whitelisted results are saved under `reports/<batch>/`. Resume with the same batch
+ID; existing failed and completed attempts are preserved. Time includes model,
+tool, and Jev calls; initialization and grading are separate. Tokens distinguish
+uncached input, cached input, output, and available reasoning counts. Missing usage
+and actual charges remain null. Error diagnostics save categories only, never raw
+provider errors. Workspaces and raw artifacts remain ignored by Git.
 
-These experiments and code changes stay in local commits. Previous experiments
-are not used to support new release performance claims.
+Speed ratios use only paired successful runs with valid observed execution. All
+failures remain in group summaries. Three repeats cannot establish significance;
+provider caches cannot be reset. Earlier v0.3 advisory-scoring runs and their
+transcription artifacts remain archival and are not pooled with v0.4. No charts
+or public performance claims are produced; changes stay in local commits.
 
 ## Historical five-arm experiment
 

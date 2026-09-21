@@ -9,7 +9,7 @@ import { fauxAssistantMessage, fauxProvider, fauxToolCall, getCurrentTools } fro
 import { runWorkflow } from "../src/runner.ts";
 import { armConfig, SCORING_ARMS, SCORING_COMMIT, VERSIONS, type Run } from "../src/metrics.ts";
 import { scoringSchedule, scoringSummary } from "../src/scoring-batch.ts";
-import { inspectDecision } from "../src/decisions.ts";
+import { failureKind } from "../src/decisions.ts";
 import { installSolution } from "./solutions.ts";
 
 const decision = {
@@ -31,8 +31,8 @@ test("scoring pairs preserve inputs and tools, measure real SDK calls, and rejec
         return Response.json({ model: VERSIONS.jev, usage: { input_tokens: 100, output_tokens: 10 },
             answers: Object.fromEntries(Object.keys(body.questions).map(id => [id, { type: "score", score: 2, confidence: 1, probabilities: { "0": 0, "1": 0, "2": 1 } }])) });
     });
-    for (const arm of SCORING_ARMS) {
-        const root = join(temporary, arm), authDir = join(temporary, "auth-" + arm);
+    for (const [index, arm] of [...SCORING_ARMS, "score-jev" as const].entries()) {
+        const root = join(temporary, arm + index), authDir = join(temporary, "auth-" + arm + index);
         await mkdir(authDir);
         const runtime = await ModelRuntime.create({ authPath: join(authDir, "auth.json"), modelsPath: null, modelsStorePath: join(authDir, "models.json"), refreshOnCreate: false });
         const faux = fauxProvider({ provider: VERSIONS.provider, models: [{ id: armConfig(arm).model, reasoning: true }], tokensPerSecond: Infinity });
@@ -41,8 +41,7 @@ test("scoring pairs preserve inputs and tools, measure real SDK calls, and rejec
             ...(arm === "score-jev" ? [() => fauxAssistantMessage(fauxToolCall("sieve_score", { ...decision, context: "A local Node project is available." }), { stopReason: "toolUse" })] : []),
             async context => {
                 toolNames.push(getCurrentTools(context.messages).map(tool => tool.name));
-                await writeFile(join(root, `decision-${stage}.json`), JSON.stringify({ ...decision, scores: decision.options.map(option => ({ id: option.id, score: 2 })), selectedId: "runtime", command: "node --version", scoringAvailable: arm === "score-jev" }));
-                return fauxAssistantMessage(fauxToolCall("bash", { command: "node --version" }), { stopReason: "toolUse" });
+                return fauxAssistantMessage(fauxToolCall("bash", { command: index === 2 && stage === 2 ? "pwd" : "node --version" }), { stopReason: "toolUse" });
             },
             async () => {
                 if (stage === 1) {
@@ -56,12 +55,16 @@ test("scoring pairs preserve inputs and tools, measure real SDK calls, and rejec
         rows.push(await runWorkflow({ root, record: join(temporary, "runs", arm + ".json"), batch: "offline", kind: "offline", workflow: "payments", arm, repeat: 1,
             harnessCommit: "offline", fixtureHash: "offline", modelRuntime: runtime, offline: true,
             onReady: async () => runtime.setRuntimeApiKey("typesafe", "fixture-only") }));
-        assert.equal((await inspectDecision(root, 1, new Set())).executedSelection, false);
+        assert(!existsSync(join(root, "decision-1.json")));
         assert((await readFile(join(root, ".pi/sieve/memories/webhook-events.md"), "utf8")).includes("nonempty after trimming"));
     }
     assert.equal(new Set(rows.map(row => row.initialHash)).size, 1);
     assert(rows.every(row => row.success && row.versions.sieve === SCORING_COMMIT && row.versions.model === "gpt-5.6-sol" && row.versions.thinking === "medium"));
-    assert.equal(calls, 5);
+    assert.equal(calls, 10);
+    const wrongCommand = rows.pop()!;
+    assert.equal(wrongCommand.stages[1].scoring![0].nextCommandMatched, false);
+    assert.equal(wrongCommand.stages[1].scoring![0].executionCompleted, true);
+    assert.equal(scoringSummary([rows[0], wrongCommand]).matchedSuccessPairs, 0);
     assert(toolNames.every(names => JSON.stringify(names) === JSON.stringify(toolNames[0])));
     assert(toolNames[0].includes("sieve_score") && !toolNames[0].includes("sieve_search"));
     assert(rows[0].stages.every(stage => stage.jev.requests === 0 && stage.scoring?.length === 0));
@@ -70,17 +73,23 @@ test("scoring pairs preserve inputs and tools, measure real SDK calls, and rejec
     assert.equal(summary.runs[1].jevInput, 500);
     assert.equal(summary.runs[0].jevInput, null);
     assert(summary.runs.every(run => run.validComparison));
-    for (const failure of ["failed-task", "timeout", "changed-rubric", "no-execution", "invented-score"]) {
+    for (const failure of ["failed-task", "timeout", "wrong-selection", "no-execution", "wrong-command", "preselected-command"]) {
         const invalid = structuredClone(rows);
         const stage = invalid[1].stages[0];
         if (failure === "failed-task") invalid[1].success = false;
         if (failure === "timeout") stage.scoring![0].reason = "timeout";
-        if (failure === "changed-rubric") stage.decision!.inputHash = "changed";
-        if (failure === "no-execution") stage.decision!.executedSelection = false;
-        if (failure === "invented-score") stage.decision!.selectedScore = 0;
+        if (failure === "wrong-selection") stage.scoring![0].selectionValid = false;
+        if (failure === "no-execution") stage.scoring![0].executionCompleted = false;
+        if (failure === "preselected-command") stage.scoring![0].commandGeneratedAfterResponse = false;
+        if (failure === "wrong-command") stage.scoring![0].nextCommandMatched = false;
         assert.equal(scoringSummary(invalid).matchedSuccessPairs, 0, failure);
     }
     assert.deepEqual(scoringSchedule().map(item => item.arm), ["score-self", "score-jev", "score-jev", "score-self", "score-self", "score-jev"]);
     assert(!JSON.stringify(summary).includes(temporary));
     assert(!JSON.stringify(summary).includes("local Node project"));
+});
+
+test("failure classification keeps only fixed categories", () => {
+    for (const [message, category] of [["HTTP 429 private body", "rate_limit"], ["authentication private token", "authentication"], ["context length exceeded", "context_limit"], ["fetch failed private host", "network"], ["private unknown body", "unknown"]])
+        assert.equal(failureKind(new Error(message)), category);
 });
