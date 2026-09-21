@@ -1,0 +1,55 @@
+{
+  "experiment": "delegated-command-choice-v0.4",
+  "batch": "decision-20260921-sol-v04",
+  "createdAt": "2026-09-21T12:56:59.546Z",
+  "sourceHash": "89415a4f4c581e9fc5416c98c187f6b38bf5821cb334afd361aa920bef727344",
+  "harnessCommit": "5df6bbaae97049f641e74a212f9eb98b1f3ee094",
+  "sieveCommit": "839ee849b1de4b135d852b66efaf2401a8eae396",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "sieve": "839ee849b1de4b135d852b66efaf2401a8eae396"
+  },
+  "sieveConfig": {
+    "timeoutMs": 10000
+  },
+  "limits": {
+    "stageMs": 300000,
+    "modelRequests": 30
+  },
+  "schedule": [
+    {
+      "repeat": 1,
+      "arm": "score-self"
+    },
+    {
+      "repeat": 1,
+      "arm": "score-jev"
+    },
+    {
+      "repeat": 2,
+      "arm": "score-jev"
+    },
+    {
+      "repeat": 2,
+      "arm": "score-self"
+    },
+    {
+      "repeat": 3,
+      "arm": "score-self"
+    },
+    {
+      "repeat": 3,
+      "arm": "score-jev"
+    }
+  ],
+  "workflow": "payments",
+  "fixtureRevision": "explicit-nonblank-callback-ids",
+  "node": "v22.23.2",
+  "method": "Direct Sol chooses and executes a diagnostic command; the Jev arm proposes 3-5 eligible commands and a neutral rubric once per stage, then executes the exact highest-scoring selection returned by sieve_score. No decision files. An observer checks the first subsequent bash command. Same fixed tool schemas in both arms, not unmodified native Pi. Candidates may differ. Five continuous stages; no grading feedback or selective reruns.",
+  "cachePolicy": "Serial alternating pair order; native server caches cannot be cleared. Three repeats do not establish statistical significance.",
+  "publication": "Local only. No charts or public performance report."
+}

@@ -1,0 +1,501 @@
+{
+  "id": "payments-3-score-self",
+  "batch": "decision-20260921-sol-v04",
+  "kind": "pilot",
+  "workflow": "payments",
+  "arm": "score-self",
+  "repeat": 3,
+  "startedAt": "2026-09-21T13:30:29.813Z",
+  "status": "completed",
+  "success": true,
+  "initialHash": "0b6c505c84bfbca77ec59c60b22f4c9e0b75e45cee80cba3f2c5ae34b2c4d54b",
+  "fixtureHash": "89415a4f4c581e9fc5416c98c187f6b38bf5821cb334afd361aa920bef727344",
+  "harnessCommit": "5df6bbaae97049f641e74a212f9eb98b1f3ee094",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "sieve": "839ee849b1de4b135d852b66efaf2401a8eae396"
+  },
+  "node": "v22.23.2",
+  "initMs": 13,
+  "elapsedMs": 577921,
+  "gradeMs": 786,
+  "stages": [
+    {
+      "stage": 1,
+      "status": "completed",
+      "elapsedMs": 103820,
+      "gradeMs": 111,
+      "checks": [
+        {
+          "id": "diagnosis",
+          "passed": true
+        },
+        {
+          "id": "reproduction-script",
+          "passed": true
+        },
+        {
+          "id": "bug-observed-without-premature-fix",
+          "passed": true
+        }
+      ],
+      "requests": 10,
+      "requestBytes": [
+        15691,
+        24999,
+        27509,
+        32581,
+        35898,
+        40175,
+        41940,
+        44431,
+        47103,
+        50745
+      ],
+      "contextChars": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleSkills": [
+        6
+      ],
+      "visibleTools": [
+        11
+      ],
+      "toolCalls": 20,
+      "toolErrors": 1,
+      "recoveries": 0,
+      "usage": {
+        "input": 8290,
+        "output": 1696,
+        "cacheRead": 48256,
+        "cacheWrite": 0,
+        "reasoning": 544,
+        "totalTokens": 58242
+      },
+      "jev": {
+        "requests": 0,
+        "inputTokens": null,
+        "outputTokens": null
+      },
+      "sieve": {
+        "enabled": false,
+        "reason": "disabled"
+      },
+      "answer": "Completed investigation without modifying production code.\n\n- Added `scripts/reproduce.ts`\n- Reproduction output: `{\"charges\":2}`\n- Added `diagnosis.json` documenting the duplicate charge\n- Baseline tests passed: 1/1\n- JSON validation passed\n\nThe later Git status check was unavailable because this directory is not a Git repository.",
+      "scoring": []
+    },
+    {
+      "stage": 2,
+      "status": "completed",
+      "elapsedMs": 150206,
+      "gradeMs": 118,
+      "checks": [
+        {
+          "id": "same-key-single-charge",
+          "passed": true
+        },
+        {
+          "id": "conflicting-amount",
+          "passed": true
+        },
+        {
+          "id": "conflicting-customer",
+          "passed": true
+        },
+        {
+          "id": "invalid-request-no-charge",
+          "passed": true
+        },
+        {
+          "id": "retry-after-gateway-failure",
+          "passed": true
+        },
+        {
+          "id": "store-isolation",
+          "passed": true
+        }
+      ],
+      "requests": 7,
+      "requestBytes": [
+        52248,
+        59355,
+        65023,
+        76033,
+        82341,
+        89892,
+        93031
+      ],
+      "contextChars": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleSkills": [
+        6
+      ],
+      "visibleTools": [
+        11
+      ],
+      "toolCalls": 18,
+      "toolErrors": 0,
+      "recoveries": 0,
+      "usage": {
+        "input": 6573,
+        "output": 4199,
+        "cacheRead": 63872,
+        "cacheWrite": 0,
+        "reasoning": 2020,
+        "totalTokens": 74644
+      },
+      "jev": {
+        "requests": 0,
+        "inputTokens": null,
+        "outputTokens": null
+      },
+      "sieve": {
+        "enabled": false,
+        "reason": "disabled"
+      },
+      "answer": "Implemented sequential payment idempotency in `src/payments.ts`:\n\n- Returns the original charge object for identical retries.\n- Rejects key reuse with changed payment details using `KEY_CONFLICT`.\n- Validates requests before gateway access using `INVALID_REQUEST`.\n- Preserves identifiers without normalization.\n- Allows retries after gateway failures without stale payment records.\n- Keeps idempotency scoped per store.\n\nAdded focused tests in `test/public.test.ts`.\n\nVerification: `npm test` — all 7 tests passed.",
+      "scoring": []
+    },
+    {
+      "stage": 3,
+      "status": "completed",
+      "elapsedMs": 138481,
+      "gradeMs": 138,
+      "checks": [
+        {
+          "id": "same-key-single-charge",
+          "passed": true
+        },
+        {
+          "id": "conflicting-amount",
+          "passed": true
+        },
+        {
+          "id": "conflicting-customer",
+          "passed": true
+        },
+        {
+          "id": "invalid-request-no-charge",
+          "passed": true
+        },
+        {
+          "id": "retry-after-gateway-failure",
+          "passed": true
+        },
+        {
+          "id": "store-isolation",
+          "passed": true
+        },
+        {
+          "id": "twenty-overlapping-retries",
+          "passed": true
+        },
+        {
+          "id": "inflight-conflict",
+          "passed": true
+        },
+        {
+          "id": "different-keys-not-serialized",
+          "passed": true
+        },
+        {
+          "id": "shared-failure-can-retry",
+          "passed": true
+        }
+      ],
+      "requests": 6,
+      "requestBytes": [
+        99503,
+        110218,
+        114173,
+        130662,
+        139378,
+        143143
+      ],
+      "contextChars": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleSkills": [
+        6
+      ],
+      "visibleTools": [
+        11
+      ],
+      "toolCalls": 11,
+      "toolErrors": 0,
+      "recoveries": 0,
+      "usage": {
+        "input": 7777,
+        "output": 3968,
+        "cacheRead": 92800,
+        "cacheWrite": 0,
+        "reasoning": 2093,
+        "totalTokens": 104545
+      },
+      "jev": {
+        "requests": 0,
+        "inputTokens": null,
+        "outputTokens": null
+      },
+      "sieve": {
+        "enabled": false,
+        "reason": "disabled"
+      },
+      "answer": "Implemented safe concurrent payment handling in `src/payments.ts`:\n\n- Reserves each key before gateway access.\n- Shares one in-flight promise across identical retries.\n- Rejects simultaneous conflicts with `KEY_CONFLICT`.\n- Clears failed reservations so retries remain possible.\n- Uses per-key reservations, allowing unrelated keys to proceed concurrently.\n- Preserves original charge object identity.\n\nAdded `test/concurrency.test.ts` covering 20 simultaneous retries, conflicts, shared failures, retry recovery, and independent keys.\n\nVerification: `npm test` — all 10 tests passed.",
+      "scoring": []
+    },
+    {
+      "stage": 4,
+      "status": "completed",
+      "elapsedMs": 86592,
+      "gradeMs": 140,
+      "checks": [
+        {
+          "id": "same-key-single-charge",
+          "passed": true
+        },
+        {
+          "id": "conflicting-amount",
+          "passed": true
+        },
+        {
+          "id": "conflicting-customer",
+          "passed": true
+        },
+        {
+          "id": "invalid-request-no-charge",
+          "passed": true
+        },
+        {
+          "id": "retry-after-gateway-failure",
+          "passed": true
+        },
+        {
+          "id": "store-isolation",
+          "passed": true
+        },
+        {
+          "id": "twenty-overlapping-retries",
+          "passed": true
+        },
+        {
+          "id": "inflight-conflict",
+          "passed": true
+        },
+        {
+          "id": "different-keys-not-serialized",
+          "passed": true
+        },
+        {
+          "id": "shared-failure-can-retry",
+          "passed": true
+        },
+        {
+          "id": "duplicate-event",
+          "passed": true
+        },
+        {
+          "id": "duplicate-charge-different-event",
+          "passed": true
+        },
+        {
+          "id": "invalid-event-no-mutation",
+          "passed": true
+        },
+        {
+          "id": "callback-concurrency",
+          "passed": true
+        }
+      ],
+      "requests": 6,
+      "requestBytes": [
+        147730,
+        162311,
+        166548,
+        171127,
+        176207,
+        180881
+      ],
+      "contextChars": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleSkills": [
+        6
+      ],
+      "visibleTools": [
+        11
+      ],
+      "toolCalls": 12,
+      "toolErrors": 0,
+      "recoveries": 0,
+      "usage": {
+        "input": 7032,
+        "output": 1944,
+        "cacheRead": 133888,
+        "cacheWrite": 0,
+        "reasoning": 370,
+        "totalTokens": 142864
+      },
+      "jev": {
+        "requests": 0,
+        "inputTokens": null,
+        "outputTokens": null
+      },
+      "sieve": {
+        "enabled": false,
+        "reason": "disabled"
+      },
+      "answer": "Extended `handleWebhook()` to:\n\n- Validate event ID, charge ID, and `payment.succeeded` type.\n- Reject invalid callbacks with `INVALID_EVENT` before mutation.\n- Return `{ accepted: false }` for repeated event IDs.\n- Record every distinct event ID.\n- Store only the original receipt per charge ID.\n- Preserve original identifiers and event object.\n\nAdded callback coverage in `test/webhook.test.ts`.\n\nVerification: `npm test` — all 15 tests passed, including existing `pay()` tests.",
+      "scoring": []
+    },
+    {
+      "stage": 5,
+      "status": "completed",
+      "elapsedMs": 98822,
+      "gradeMs": 279,
+      "checks": [
+        {
+          "id": "same-key-single-charge",
+          "passed": true
+        },
+        {
+          "id": "conflicting-amount",
+          "passed": true
+        },
+        {
+          "id": "conflicting-customer",
+          "passed": true
+        },
+        {
+          "id": "invalid-request-no-charge",
+          "passed": true
+        },
+        {
+          "id": "retry-after-gateway-failure",
+          "passed": true
+        },
+        {
+          "id": "store-isolation",
+          "passed": true
+        },
+        {
+          "id": "twenty-overlapping-retries",
+          "passed": true
+        },
+        {
+          "id": "inflight-conflict",
+          "passed": true
+        },
+        {
+          "id": "different-keys-not-serialized",
+          "passed": true
+        },
+        {
+          "id": "shared-failure-can-retry",
+          "passed": true
+        },
+        {
+          "id": "duplicate-event",
+          "passed": true
+        },
+        {
+          "id": "duplicate-charge-different-event",
+          "passed": true
+        },
+        {
+          "id": "invalid-event-no-mutation",
+          "passed": true
+        },
+        {
+          "id": "callback-concurrency",
+          "passed": true
+        },
+        {
+          "id": "verification-artifact",
+          "passed": true
+        },
+        {
+          "id": "regression-tests-added",
+          "passed": true
+        }
+      ],
+      "requests": 7,
+      "requestBytes": [
+        184578,
+        203050,
+        208547,
+        217323,
+        222806,
+        226466,
+        228697
+      ],
+      "contextChars": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleSkills": [
+        6
+      ],
+      "visibleTools": [
+        11
+      ],
+      "toolCalls": 14,
+      "toolErrors": 0,
+      "recoveries": 0,
+      "usage": {
+        "input": 8800,
+        "output": 2328,
+        "cacheRead": 209152,
+        "cacheWrite": 0,
+        "reasoning": 756,
+        "totalTokens": 220280
+      },
+      "jev": {
+        "requests": 0,
+        "inputTokens": null,
+        "outputTokens": null
+      },
+      "sieve": {
+        "enabled": false,
+        "reason": "disabled"
+      },
+      "answer": "Completed full regression:\n\n- Added `test/regression.test.ts` with lifecycle, failed-reservation reuse, callback deduplication, and public-export checks.\n- Preserved production code and reference catalog.\n- Ran `npm test`: all 19 tests passed.\n- Added and validated `verification.json` with completed checks.",
+      "scoring": []
+    }
+  ]
+}

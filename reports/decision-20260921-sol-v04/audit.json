@@ -1,0 +1,112 @@
+{
+  "verifiedAt": "2026-09-21T13:50:32.945Z",
+  "experiment": "delegated-command-choice-v0.4",
+  "sourceHash": "89415a4f4c581e9fc5416c98c187f6b38bf5821cb334afd361aa920bef727344",
+  "sieveCommit": "839ee849b1de4b135d852b66efaf2401a8eae396",
+  "harnessCommit": "5df6bbaae97049f641e74a212f9eb98b1f3ee094",
+  "checks": {
+    "runs": 6,
+    "completedStages": 30,
+    "allStagesPassed": true,
+    "identicalInitialFiles": true,
+    "frozenSourcesMatch": true,
+    "summaryRegeneratedExactly": true,
+    "usageArithmeticValid": true,
+    "knownMainModelUsage": true,
+    "knownJevUsage": true,
+    "withinStageLimits": true,
+    "validSelections": 15,
+    "executedUnchangedAfterResponse": 15,
+    "jevFallbacks": 0
+  },
+  "pairs": [
+    {
+      "repeat": 1,
+      "directSeconds": 362.958,
+      "jevSeconds": 513.517,
+      "jevTimeChangePercent": 41.481108006987036,
+      "baselineOverJev": 0.7068081485130969
+    },
+    {
+      "repeat": 2,
+      "directSeconds": 577.711,
+      "jevSeconds": 552.913,
+      "jevTimeChangePercent": -4.292457647508874,
+      "baselineOverJev": 1.0448497322363555
+    },
+    {
+      "repeat": 3,
+      "directSeconds": 577.921,
+      "jevSeconds": 526.208,
+      "jevTimeChangePercent": -8.948108824562539,
+      "baselineOverJev": 1.098274826684505
+    }
+  ],
+  "totals": [
+    {
+      "arm": "score-self",
+      "seconds": 1518.5900000000001,
+      "requests": 102,
+      "usage": {
+        "input": 160989,
+        "output": 41803,
+        "cacheRead": 1575296,
+        "cacheWrite": 0,
+        "reasoning": 16263,
+        "totalTokens": 1778088
+      }
+    },
+    {
+      "arm": "score-jev",
+      "seconds": 1592.638,
+      "requests": 117,
+      "usage": {
+        "input": 178152,
+        "output": 49377,
+        "cacheRead": 2050048,
+        "cacheWrite": 0,
+        "reasoning": 15408,
+        "totalTokens": 2277577
+      }
+    }
+  ],
+  "jev": {
+    "requests": 15,
+    "inputTokens": 20113,
+    "outputTokens": 900,
+    "latencyMs": {
+      "min": 1261,
+      "median": 2828,
+      "max": 6221,
+      "total": 47167
+    },
+    "aboveProductionDeadline": 14,
+    "benchmarkTimeoutMs": 10000,
+    "dispatchMs": {
+      "median": 6286,
+      "total": 92205
+    },
+    "selectedCommandErrors": 1
+  },
+  "preflight": {
+    "includedInStatistics": false,
+    "available": true,
+    "reason": "none",
+    "selectedId": "concurrent_test",
+    "elapsedMs": 2247,
+    "model": "jev-1.13.0",
+    "inputTokens": 665,
+    "outputTokens": 46
+  },
+  "actualCostUsd": null,
+  "limitations": [
+    "Three paired synthetic payment workflows with one main model; no statistical significance claim.",
+    "The direct condition keeps the same Sieve tool schema but disables Jev; it is not unmodified native Pi.",
+    "The Jev condition requires one delegated diagnostic choice per stage; candidates may differ and internal prior reasoning is unobservable.",
+    "Only selected commands are delegated; subsequent implementation remains with the main model.",
+    "Server cache state and service variation cannot be controlled.",
+    "The 10-second benchmark timeout differs from the 1.5-second production default.",
+    "Token usage is not an actual subscription charge; reasoning tokens are included in output, not added again.",
+    "Prior experimental batches and the preflight are excluded; local data only, no charts or publication."
+  ]
+}
