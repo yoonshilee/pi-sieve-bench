@@ -3,6 +3,7 @@ import type { Check } from "./grade.ts";
 export const ARMS = ["native", "full", "sieve", "luna-native", "luna-sieve"] as const;
 export const RETRIEVAL_ARMS = ["retrieval-local", "retrieval-jev"] as const;
 export const RETRIEVAL_COMMIT = "ba996c7bfceddbee6fa75e03a8f4a323052e8d3c";
+export const RETRIEVAL_MODEL = "gpt-5.6-sol";
 export type Arm = typeof ARMS[number] | typeof RETRIEVAL_ARMS[number];
 export const RETRIEVAL_QUERIES = [
     "duplicate payment charges after timeout and retry active idempotency contract",
@@ -22,7 +23,7 @@ export const VERSIONS = { pi: "0.86.1", provider: "openai-codex", model: "gpt-6-
 export function armConfig(arm: Arm): {
     model: string;
     mode: "native" | "full" | "sieve";
-} { return { model: arm.startsWith("luna-") ? "gpt-5.6-luna" : VERSIONS.model, mode: (arm.endsWith("sieve") || arm.startsWith("retrieval-")) ? "sieve" : arm === "full" ? "full" : "native" }; }
+} { return { model: arm.startsWith("retrieval-") ? RETRIEVAL_MODEL : arm.startsWith("luna-") ? "gpt-5.6-luna" : VERSIONS.model, mode: (arm.endsWith("sieve") || arm.startsWith("retrieval-")) ? "sieve" : arm === "full" ? "full" : "native" }; }
 export const LIMITS = { stageMs: 300000, modelRequests: 30 } as const;
 export type Usage = {
     input: number | null;

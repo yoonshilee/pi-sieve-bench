@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { atomicJson, preserveExistingRun, runWorkflow } from "./runner.ts";
-import { addUsage, emptyUsage, LIMITS, median, REQUIRED_REFERENCES, RETRIEVAL_ARMS, RETRIEVAL_COMMIT, RETRIEVAL_QUERIES, score, stageScore, VERSIONS, type Run } from "./metrics.ts";
+import { addUsage, emptyUsage, LIMITS, median, REQUIRED_REFERENCES, RETRIEVAL_ARMS, RETRIEVAL_COMMIT, RETRIEVAL_MODEL, RETRIEVAL_QUERIES, score, stageScore, VERSIONS, type Run } from "./metrics.ts";
 import { SIEVE_CONFIG } from "./fixtures.ts";
 
 export function retrievalSummary(rows: Run[]) {
@@ -79,7 +79,7 @@ export async function compareRetrieval(batch: string, sourceHash: string, harnes
     } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
         await atomicJson(manifestPath, { batch, experiment: "on-demand-retrieval-v0.2", kind: "pilot", createdAt: new Date().toISOString(), sourceHash, harnessCommit,
-            versions: { ...VERSIONS, sieve: RETRIEVAL_COMMIT }, sieveConfig: SIEVE_CONFIG, limits: LIMITS,
+            versions: { ...VERSIONS, model: RETRIEVAL_MODEL, sieve: RETRIEVAL_COMMIT }, sieveConfig: SIEVE_CONFIG, limits: LIMITS,
             schedule: RETRIEVAL_ARMS, queries: RETRIEVAL_QUERIES, requiredReferences: REQUIRED_REFERENCES,
             node: process.version, cachePolicy: "Local first, Jev second. No explicit warming. Provider caches cannot be cleared. Prior experiments may affect caching." });
     }

@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { ModelRuntime } from "@earendil-works/pi-coding-agent";
 import { fauxAssistantMessage, fauxProvider, fauxToolCall, getCurrentTools } from "@earendil-works/pi-ai";
 import { runWorkflow } from "../src/runner.ts";
-import { REQUIRED_REFERENCES, RETRIEVAL_ARMS, RETRIEVAL_COMMIT, RETRIEVAL_QUERIES, VERSIONS, type Run } from "../src/metrics.ts";
+import { armConfig, REQUIRED_REFERENCES, RETRIEVAL_ARMS, RETRIEVAL_COMMIT, RETRIEVAL_QUERIES, VERSIONS, type Run } from "../src/metrics.ts";
 import { reportRetrieval, retrievalSummary } from "../src/retrieval.ts";
 import { installSolution } from "./solutions.ts";
 
@@ -29,7 +29,7 @@ test("paired retrieval uses identical files and queries, preserves tools, and re
         const authDir = join(temporary, "auth-" + arm);
         await mkdir(authDir);
         const runtime = await ModelRuntime.create({ authPath: join(authDir, "auth.json"), modelsPath: null, modelsStorePath: join(authDir, "models.json"), refreshOnCreate: false });
-        const faux = fauxProvider({ provider: VERSIONS.provider, models: [{ id: VERSIONS.model, reasoning: true }], tokensPerSecond: Infinity });
+        const faux = fauxProvider({ provider: VERSIONS.provider, models: [{ id: armConfig(arm).model, reasoning: true }], tokensPerSecond: Infinity });
         runtime.registerNativeProvider(faux.provider);
         faux.setResponses(RETRIEVAL_QUERIES.flatMap((query, index) => [
             context => {
@@ -51,6 +51,7 @@ test("paired retrieval uses identical files and queries, preserves tools, and re
     }
     assert.equal(new Set(rows.map(row => row.initialHash)).size, 1);
     assert(rows.every(row => row.success && row.versions.sieve === RETRIEVAL_COMMIT));
+    assert(rows.every(row => row.versions.model === "gpt-5.6-sol" && row.versions.thinking === "medium"));
     assert.equal(queries.length, 5);
     assert.equal(toolNames.length, 10);
     assert(toolNames.every(names => JSON.stringify(names) === JSON.stringify(toolNames[0])));

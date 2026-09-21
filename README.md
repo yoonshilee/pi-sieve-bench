@@ -14,6 +14,11 @@ their results are kept separate.
 
 [Retrieval comparison](#on-demand-retrieval-comparison) · [Historical setup](#historical-five-arm-experiment) · [Results](#results) · [Reproduction](#setup-and-commands)
 
+New on-demand experiments use **openai-codex/gpt-5.6-sol, medium**. Saved Astra
+and Luna measurements retain their original model identities. Changing the model
+requires a new batch ID. Earlier experiments are archival diagnostics, excluded
+from future release performance claims. Report and chart updates are deferred.
+
 ## Historical five-arm experiment
 
 | Setting | Fixed value |
@@ -133,7 +138,10 @@ The historical runner and five arms remain pinned to v0.1. A separate comparison
 loads v0.2 at `ba996c7` under both conditions: `retrieval-local` uses `/sieve off`,
 and `retrieval-jev` uses `/sieve on`. Both retain the same tool definition, initial
 files, six skills, six extension tools, and 28 references. The main model is
-`openai-codex/gpt-6-astra` with medium reasoning.
+`openai-codex/gpt-5.6-sol` with medium reasoning for new batches. The saved
+2026-09-21 pair used Astra.
+The historical `pilot` and `run` commands retain the original Astra/Luna design
+for reproduction and are separate from this current comparison.
 
 ```sh
 npm run compare -- retrieval-001
