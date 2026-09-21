@@ -81,8 +81,29 @@ test("real SDK preserves shared inputs, selection boundaries, and all five stage
     assert(!JSON.stringify(requests).includes(temporary));
     const summaries = summarize(rows);
     assert.equal(summaries.groups.length, 5);
+    assert.deepEqual(summaries.totals.jevUsage, {inputTokens:1000,outputTokens:200,complete:true});
+    const pilot = rows.map(r => ({...r,kind:"pilot" as const}));
+    assert.equal(summarize(pilot).projection?.jevRequests,120);
+    const partial = structuredClone(pilot);
+    partial[2].stages[0].jev.inputTokens = null;
+    assert.equal(summarize(partial).projection?.jevInputTokens,null);
     await report(temporary, false);
     assert((await readFile(join(temporary, "README.md"), "utf8")).includes("native"));
+});
+
+test("provider failure without usage remains unknown rather than zero", async t => {
+    const root = await realpath(await mkdtemp(join(tmpdir(),"sieve-bench-usage-")));
+    t.after(() => rm(root,{recursive:true,force:true}));
+    const runtime = await ModelRuntime.create({authPath:join(root,"auth.json"),modelsPath:null,modelsStorePath:join(root,"models.json"),refreshOnCreate:false});
+    const faux = fauxProvider({provider:VERSIONS.provider,models:[{id:VERSIONS.model,reasoning:true}],tokensPerSecond:Infinity});
+    runtime.registerNativeProvider(faux.provider);
+    faux.setResponses([async () => {
+        throw new Error("Offline provider failure.");
+    }]);
+    const run = await runWorkflow({root:join(root,"task"),record:join(root,"record.json"),batch:"offline",kind:"offline",workflow:"payments",arm:"native",repeat:1,harnessCommit:"offline",fixtureHash:"offline",modelRuntime:runtime,offline:true});
+    assert.equal(run.status,"provider_error");
+    assert.equal(run.success,false);
+    assert.deepEqual(run.stages[0].usage,emptyUsage());
 });
 test("metrics use matched successes, count usage once, and rotate order", () => {
     const usage = emptyUsage();

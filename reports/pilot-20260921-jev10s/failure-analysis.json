@@ -1,0 +1,29 @@
+{
+  "run": "payments-1-luna-native",
+  "check": "invalid-event-no-mutation",
+  "stages": [
+    4,
+    5
+  ],
+  "input": {
+    "id": "valid-event",
+    "chargeId": " ",
+    "type": "payment.succeeded"
+  },
+  "expected": {
+    "accepted": null,
+    "error": "INVALID_EVENT",
+    "events": 0,
+    "receipts": 0
+  },
+  "observed": {
+    "accepted": true,
+    "error": null,
+    "events": 1,
+    "receipts": 1
+  },
+  "sourceFile": "src/payments.ts",
+  "sourceSha256": "7113069f71fddca0af9904b9f64a4491fb349a5f003e85c4ead0fba945d77097",
+  "sourceExcerpt": "export async function handleWebhook(store, event) {\n  if (!event || typeof event !== \"object\" ||\n      typeof event.id !== \"string\" || event.id.length === 0 ||\n      typeof event.chargeId !== \"string\" || event.chargeId.length === 0 ||\n      event.type !== \"payment.succeeded\") {\n    throw new Error(\"INVALID_EVENT\");\n  }\n\n  if (store.events.has(event.id)) {\n    return { accepted: false };\n  }\n\n  store.events.add(event.id);\n  if (!store.receipts.some((receipt) => receipt.chargeId === event.chargeId)) {\n    store.receipts.push(event);\n  }\n  return { accepted: true };\n}\n",
+  "note": "Post-run reproduction in the same sandbox; no model feedback, no model call, no workspace edits, and no change to measured scores or durations."
+}

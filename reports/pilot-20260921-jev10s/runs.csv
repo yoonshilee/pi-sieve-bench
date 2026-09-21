@@ -1,0 +1,6 @@
+run,workflow,arm,repeat,status,rawSuccess,reviewedSuccess,rawScore,reviewedScore,seconds,input,output,cacheRead,cacheWrite,reasoning,totalTokens,jevRequests
+payments-1-full,payments,full,1,completed,true,true,1,1,390.525,362725,9104,75392,0,103,447221,0
+payments-1-luna-native,payments,luna-native,1,completed,false,false,0.9732142857142858,0.9732142857142858,530.273,86911,9972,231936,0,4055,328819,0
+payments-1-luna-sieve,payments,luna-sieve,1,completed,true,true,1,1,622.971,170918,11950,280064,0,4975,462932,5
+payments-1-native,payments,native,1,completed,true,true,1,1,352.544,32577,8559,309504,0,147,350640,0
+payments-1-sieve,payments,sieve,1,completed,true,true,1,1,331.159,250907,7320,58752,0,24,316979,5

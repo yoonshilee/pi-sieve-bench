@@ -11,7 +11,7 @@
       "rawSuccesses": 1,
       "validSelectionRuns": null,
       "meanScore": 1,
-      "rawMeanScore": 0.9333333333333332,
+      "rawMeanScore": 1,
       "stageScores": [
         1,
         1,
@@ -19,14 +19,14 @@
         1,
         1
       ],
-      "medianSeconds": 369.254,
-      "minSeconds": 369.254,
-      "maxSeconds": 369.254,
-      "medianTokens": 343184,
-      "medianInput": 41294,
-      "medianOutput": 8386,
-      "medianCached": 293504,
-      "medianReasoning": 121,
+      "medianSeconds": 352.544,
+      "minSeconds": 352.544,
+      "maxSeconds": 352.544,
+      "medianTokens": 350640,
+      "medianInput": 32577,
+      "medianOutput": 8559,
+      "medianCached": 309504,
+      "medianReasoning": 147,
       "medianCacheWrite": 0,
       "jevRequests": 0,
       "jevInputTokens": null,
@@ -43,7 +43,7 @@
       "rawSuccesses": 1,
       "validSelectionRuns": null,
       "meanScore": 1,
-      "rawMeanScore": 0.9333333333333332,
+      "rawMeanScore": 1,
       "stageScores": [
         1,
         1,
@@ -51,14 +51,14 @@
         1,
         1
       ],
-      "medianSeconds": 391.248,
-      "minSeconds": 391.248,
-      "maxSeconds": 391.248,
-      "medianTokens": 439193,
-      "medianInput": 357236,
-      "medianOutput": 8997,
-      "medianCached": 72960,
-      "medianReasoning": 116,
+      "medianSeconds": 390.525,
+      "minSeconds": 390.525,
+      "maxSeconds": 390.525,
+      "medianTokens": 447221,
+      "medianInput": 362725,
+      "medianOutput": 9104,
+      "medianCached": 75392,
+      "medianReasoning": 103,
       "medianCacheWrite": 0,
       "jevRequests": 0,
       "jevInputTokens": null,
@@ -73,9 +73,9 @@
       "n": 1,
       "successes": 1,
       "rawSuccesses": 1,
-      "validSelectionRuns": 0,
+      "validSelectionRuns": 1,
       "meanScore": 1,
-      "rawMeanScore": 0.9333333333333332,
+      "rawMeanScore": 1,
       "stageScores": [
         1,
         1,
@@ -83,23 +83,20 @@
         1,
         1
       ],
-      "medianSeconds": 357.435,
-      "minSeconds": 357.435,
-      "maxSeconds": 357.435,
-      "medianTokens": 352118,
-      "medianInput": 276183,
-      "medianOutput": 7839,
-      "medianCached": 68096,
-      "medianReasoning": 54,
+      "medianSeconds": 331.159,
+      "minSeconds": 331.159,
+      "maxSeconds": 331.159,
+      "medianTokens": 316979,
+      "medianInput": 250907,
+      "medianOutput": 7320,
+      "medianCached": 58752,
+      "medianReasoning": 24,
       "medianCacheWrite": 0,
       "jevRequests": 5,
-      "jevInputTokens": null,
-      "jevOutputTokens": null,
-      "fallbacks": 5,
-      "fallbackReasons": {
-        "timeout": 4,
-        "service_error": 1
-      }
+      "jevInputTokens": 25857,
+      "jevOutputTokens": 3655,
+      "fallbacks": 0,
+      "fallbackReasons": {}
     },
     {
       "workflow": "payments",
@@ -109,23 +106,23 @@
       "successes": 0,
       "rawSuccesses": 0,
       "validSelectionRuns": null,
-      "meanScore": 0.8,
-      "rawMeanScore": 0.8,
+      "meanScore": 0.9732142857142858,
+      "rawMeanScore": 0.9732142857142858,
       "stageScores": [
         1,
         1,
         1,
-        1,
-        0
+        0.9285714285714286,
+        0.9375
       ],
-      "medianSeconds": 214.568,
-      "minSeconds": 214.568,
-      "maxSeconds": 214.568,
-      "medianTokens": 190624,
-      "medianInput": 41502,
-      "medianOutput": 8322,
-      "medianCached": 140800,
-      "medianReasoning": 3075,
+      "medianSeconds": 530.273,
+      "minSeconds": 530.273,
+      "maxSeconds": 530.273,
+      "medianTokens": 328819,
+      "medianInput": 86911,
+      "medianOutput": 9972,
+      "medianCached": 231936,
+      "medianReasoning": 4055,
       "medianCacheWrite": 0,
       "jevRequests": 0,
       "jevInputTokens": null,
@@ -139,10 +136,10 @@
       "model": "gpt-5.6-luna",
       "n": 1,
       "successes": 1,
-      "rawSuccesses": 0,
-      "validSelectionRuns": 0,
+      "rawSuccesses": 1,
+      "validSelectionRuns": 1,
       "meanScore": 1,
-      "rawMeanScore": 0.9875,
+      "rawMeanScore": 1,
       "stageScores": [
         1,
         1,
@@ -150,69 +147,67 @@
         1,
         1
       ],
-      "medianSeconds": 333.53,
-      "minSeconds": 333.53,
-      "maxSeconds": 333.53,
-      "medianTokens": 498612,
-      "medianInput": 161775,
-      "medianOutput": 12741,
-      "medianCached": 324096,
-      "medianReasoning": 5409,
+      "medianSeconds": 622.971,
+      "minSeconds": 622.971,
+      "maxSeconds": 622.971,
+      "medianTokens": 462932,
+      "medianInput": 170918,
+      "medianOutput": 11950,
+      "medianCached": 280064,
+      "medianReasoning": 4975,
       "medianCacheWrite": 0,
       "jevRequests": 5,
-      "jevInputTokens": 5184,
-      "jevOutputTokens": 731,
-      "fallbacks": 4,
-      "fallbackReasons": {
-        "timeout": 4
-      }
+      "jevInputTokens": 25857,
+      "jevOutputTokens": 3655,
+      "fallbacks": 0,
+      "fallbackReasons": {}
     }
   ],
-  "reviewedChecks": 4,
+  "reviewedChecks": 0,
   "pairedSpeedups": {
     "native": {
-      "n": 0,
-      "ratio": null
+      "n": 1,
+      "ratio": 1.0645762307532032
     },
     "full": {
-      "n": 0,
-      "ratio": null
+      "n": 1,
+      "ratio": 1.1792673609957753
     },
     "luna": {
       "n": 0,
       "ratio": null
     },
     "lunaVsAstra": {
-      "n": 0,
-      "ratio": null
+      "n": 1,
+      "ratio": 0.565907562310284
     }
   },
   "totals": {
-    "seconds": 1666.0349999999999,
+    "seconds": 2227.472,
     "usage": {
-      "input": 877990,
-      "output": 46285,
-      "cacheRead": 899456,
+      "input": 904038,
+      "output": 46905,
+      "cacheRead": 955648,
       "cacheWrite": 0,
-      "reasoning": 8775,
-      "totalTokens": 1823731
+      "reasoning": 9304,
+      "totalTokens": 1906591
     },
     "jevRequests": 10,
     "jevUsage": {
-      "inputTokens": 5184,
-      "outputTokens": 731,
-      "complete": false
+      "inputTokens": 51714,
+      "outputTokens": 7310,
+      "complete": true
     },
     "actualCostUsd": null
   },
   "projection": {
     "formalRuns": 60,
     "multiplier": 12,
-    "seconds": 19992.42,
-    "totalTokens": 21884772,
+    "seconds": 26729.664000000004,
+    "totalTokens": 22879092,
     "jevRequests": 120,
-    "jevInputTokens": null,
-    "jevOutputTokens": null,
+    "jevInputTokens": 620568,
+    "jevOutputTokens": 87720,
     "note": "Linear estimate from one payment attempt per arm. Early failures shorten the pilot; other workflows and service conditions may differ."
   }
 }

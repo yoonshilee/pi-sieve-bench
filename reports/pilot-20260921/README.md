@@ -37,7 +37,7 @@ Main-model components are medians; Jev values are sums of available responses. R
 
 ## Formal-batch estimate
 
-Linear projection: 5.55 hours and 21884772 main-model tokens for 60 workflows (12 times the five-arm payment pilot). This is not a bound or a bill. Early failures shorten the pilot; other workflows, cache behavior, and Jev availability may change usage substantially. Formal execution requires user confirmation.
+Linear projection: 5.55 hours and 21884772 main-model tokens for 60 workflows (12 times the five-arm payment pilot). Jev: 120 requests, N/A input and N/A output tokens; token projection is unavailable when pilot usage is incomplete. This is not a bound or a bill. Early failures shorten the pilot; other workflows, cache behavior, and Jev availability may change usage substantially. Formal execution requires user confirmation.
 
 ## Outcomes and failures
 

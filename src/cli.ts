@@ -47,7 +47,7 @@ async function main(): Promise<void> {
             throw new Error("Cannot resume a batch with changed experiment code.");
     }
     else
-        await atomicJson(manifestPath, { batch, kind, createdAt: new Date().toISOString(), sourceHash: fingerprint, harnessCommit: commit, versions: VERSIONS, sieveConfig: SIEVE_CONFIG, limits: LIMITS, schedule: schedule(kind).map(item => ({...item, ...armConfig(item.arm)})), node: process.version, platform: process.platform, arch: process.arch, cachePolicy: "No cache warming; provider cache cannot be cleared; record reported usage.", compaction: false, retries: false, formalAuthorized: kind === "formal" });
+        await atomicJson(manifestPath, { batch, kind, createdAt: new Date().toISOString(), sourceHash: fingerprint, harnessCommit: commit, versions: VERSIONS, sieveConfig: SIEVE_CONFIG, limits: LIMITS, schedule: schedule(kind).map(item => ({...item, ...armConfig(item.arm)})), node: process.version, platform: process.platform, arch: process.arch, cachePolicy: "No explicit cache warming in the runner. Provider caches cannot be cleared. Prior experiments and diagnostic probes may affect caching; record reported usage and batch-specific notes.", compaction: false, retries: false, formalAuthorized: kind === "formal" });
     await mkdir(join(output, "runs"), { recursive: true });
     let errors = 0;
     for (const item of schedule(kind)) {

@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
+matplotlib.rcParams["svg.hashsalt"] = "pi-sieve-bench"
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -16,11 +17,12 @@ def main():
     """
     directory = Path(sys.argv[1])
     rows = [json.loads(line) for line in (directory / "runs.jsonl").read_text().splitlines() if line]
-    groups = json.loads((directory / "summary.json").read_text())["groups"]
+    summary = json.loads((directory / "summary.json").read_text())
+    groups = summary["groups"]
     arms = ["native", "full", "sieve", "luna-native", "luna-sieve"]
     colors = {"native": "#526987", "full": "#c08b3c", "sieve": "#147d77", "luna-native": "#986aa0", "luna-sieve": "#c56b65"}
     labels = [f"{g['workflow']}\n{g['arm']}" for g in groups]
-    fig, axes = plt.subplots(3, 1, figsize=(max(10, len(groups) * 1.1), 12), layout="constrained")
+    fig, axes = plt.subplots(3, 1, figsize=(max(10, len(groups) * 1.1), 12))
     fig.suptitle("Pi Sieve | " + ("Pilot observations (n=1 per arm)" if rows[0]["kind"] == "pilot" else "Long-workflow benchmark"), fontsize=18, weight="bold")
     for i, group in enumerate(groups):
         matching = [r for r in rows if r["workflow"] == group["workflow"] and r["arm"] == group["arm"]]
@@ -47,11 +49,17 @@ def main():
         bottom += values
     axes[2].set(title="Reported main-model tokens by component (medians; missing values omitted)", ylabel="Tokens", xticks=range(len(labels)), xticklabels=labels)
     axes[2].legend(loc="upper left", frameon=True, facecolor="white", framealpha=0.95)
+    axes[2].set_ylim(0, max(float(max(bottom)) * 1.45, 1))
     axes[2].grid(axis="y", alpha=0.2)
-    fig.get_layout_engine().set(rect=(0, 0.035, 1, 0.97))
-    fig.text(0.01, 0.005, "gpt-6-astra + gpt-5.6-luna / medium · Pi 0.86.1 · Jev 1.13.0 · Synthetic projects; no general performance claim", fontsize=9, color="#526987")
+    fig.tight_layout(rect=(0, 0.055, 1, 0.95), h_pad=2)
+    fallbacks = sum(group["fallbacks"] for group in groups)
+    calls = sum(group["jevRequests"] for group in groups)
+    fig.text(0.01, 0.005, "gpt-6-astra + gpt-5.6-luna / medium · Pi 0.86.1 · Jev 1.13.0 · Synthetic projects; no general performance claim\n"
+             f"Jev fallbacks: {fallbacks}/{calls} calls · Corrected grading verdicts: {summary['reviewedChecks']} · Missing stages score zero", fontsize=9, color="#526987")
     for suffix in ["png", "svg"]:
-        fig.savefig(directory / f"benchmark.{suffix}", dpi=160, facecolor="white", bbox_inches="tight")
+        fig.savefig(directory / f"benchmark.{suffix}", dpi=160, facecolor="white", bbox_inches="tight", metadata={"Date": None} if suffix == "svg" else None)
+    svg = directory / "benchmark.svg"
+    svg.write_text("\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n")
     plt.close(fig)
 
 

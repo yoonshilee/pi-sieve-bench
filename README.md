@@ -137,9 +137,36 @@ CI performs offline checks and plot generation without real credentials.
 
 ## Results
 
-No formal benchmark has been run. The first pilot below is an availability finding,
-not a valid comparison of Jev's benefit. A revised five-arm pilot uses a 10-second
-Jev timeout and the corrected grader; its manifest freezes that change explicitly.
+No formal benchmark has been run. The revised five-arm pilot below uses a 10-second
+Jev timeout and the corrected grader, frozen before execution. The original pilot
+is retained separately as an availability finding.
+
+### Revised pilot: 2026-09-21, 10-second timeout
+
+**Jev returned valid selections for all 10 calls, with zero fallbacks.** Each arm has one payment workflow; this is preliminary evidence, not a general performance claim.
+
+| Arm | Workflow success | Stage checks | Seconds | Main-model tokens | Jev success / calls |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Astra Native | 1/1 | 100.0% | 352.544 | 350,640 | N/A |
+| Astra Full Context | 1/1 | 100.0% | 390.525 | 447,221 | N/A |
+| Astra Sieve | 1/1 | 100.0% | 331.159 | 316,979 | 5/5 |
+| Luna Native | 0/1 | 97.3% | 530.273 | 328,819 | N/A |
+| Luna Sieve | 1/1 | 100.0% | 622.971 | 462,932 | 5/5 |
+
+Astra Sieve used 6.1% less workflow time and 9.6% fewer total main-model tokens than Astra Native in their one successful matched pair (1.06× duration ratio). Against Astra Full Context, time was 15.2% lower and tokens 29.1% lower (1.18×; one pair). These differences are observations, not estimates of a repeatable causal effect.
+
+Luna Sieve passed all final checks but took 622.971 seconds and 462,932 tokens. Luna Native took 530.273 seconds and 328,819 tokens, but accepted a whitespace-only callback charge ID and failed final acceptance. There is no successful Luna-to-Luna pair for a speedup calculation. Against successful Astra Native, Luna Sieve was 1.77 times as slow and used 32.0% more total main-model tokens. This small-model configuration did not deliver a speed or token reduction in this sample.
+
+**Cache matters:** Astra Native reported 32,577 uncached input tokens; Astra Sieve reported 250,907, despite fewer total tokens. Their cached input was 309,504 and 58,752 respectively. Fewer total tokens cannot be translated directly into lower monetary cost. Prior pilot runs and Jev diagnostic replays may affect server caching; service load was not controlled.
+
+**Recorded use:** 1,906,591 main-model tokens across this batch (904,038 uncached input, 955,648 cached input, 46,905 output; 9,304 reasoning tokens are already inside output). Jev reported 51,714 input and 7,310 output tokens. Workflow execution totaled 37.12 minutes, excluding setup and independent grading. Actual dollar charges are unknown. Across both pilot batches, reported main-model usage totals 3,730,322 tokens; diagnostic probes are separate from workflow results.
+
+**Formal estimate:** 60 workflows / 300 stages project to approximately 7.42 hours, 22,879,092 main-model tokens, and 120 Jev requests with approximately 620,568 input plus 87,720 output tokens. This extrapolates one payment workflow per arm; different workflows and service conditions can change it substantially. Formal execution has not started and requires user confirmation.
+
+[Complete revised report](reports/pilot-20260921-jev10s/README.md) · [CSV](reports/pilot-20260921-jev10s/runs.csv) · [JSONL](reports/pilot-20260921-jev10s/runs.jsonl) · [Failure reproduction](reports/pilot-20260921-jev10s/failure-analysis.json)
+
+![Revised pilot with all ten Jev selections successful](reports/pilot-20260921-jev10s/benchmark.png)
+
 
 ### Initial pilot: 2026-09-21, 1.5-second timeout
 

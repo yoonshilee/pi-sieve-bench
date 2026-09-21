@@ -33,11 +33,18 @@ export function summarize(rows: Run[]) {
     const complete = rows.filter(r => r.status !== "running"), usage = emptyUsage();
     for (const r of complete) for (const s of r.stages) addUsage(usage, s.usage);
     const seconds = complete.reduce((n, r) => n + r.elapsedMs / 1000, 0);
+    const jevStages = complete.flatMap(r => r.stages).filter(s => s.jev.requests > 0);
+    const jevRequests = jevStages.reduce((n, s) => n + s.jev.requests, 0);
+    const jevUsage = {
+        inputTokens: jevStages.some(s => s.jev.inputTokens !== null) ? jevStages.reduce((n, s) => n + (s.jev.inputTokens ?? 0), 0) : null,
+        outputTokens: jevStages.some(s => s.jev.outputTokens !== null) ? jevStages.reduce((n, s) => n + (s.jev.outputTokens ?? 0), 0) : null,
+        complete: jevStages.length > 0 && jevStages.every(s => s.jev.inputTokens !== null && s.jev.outputTokens !== null),
+    };
     return { kind: rows[0]?.kind ?? "offline", runs: rows.length, groups,
         reviewedChecks: rows.reduce((n, r) => n + (r.checkReviews?.filter(c => c.passed !== c.originalPassed).length ?? 0), 0),
         pairedSpeedups: { native: pairedSpeedup(rows, "native"), full: pairedSpeedup(rows, "full"), luna: pairedSpeedup(rows, "luna-native", "luna-sieve"), lunaVsAstra: pairedSpeedup(rows, "native", "luna-sieve") },
-        totals: { seconds, usage, jevRequests: complete.reduce((n, r) => n + r.stages.reduce((n, s) => n + s.jev.requests, 0), 0), actualCostUsd: null },
-        projection: rows[0]?.kind === "pilot" && complete.length === 5 ? { formalRuns: 60, multiplier: 12, seconds: seconds * 12, totalTokens: usage.totalTokens === null ? null : usage.totalTokens * 12, note: "Linear estimate from one payment attempt per arm. Early failures shorten the pilot; other workflows and service conditions may differ." } : null,
+        totals: { seconds, usage, jevRequests, jevUsage, actualCostUsd: null },
+        projection: rows[0]?.kind === "pilot" && complete.length === 5 ? { formalRuns: 60, multiplier: 12, seconds: seconds * 12, totalTokens: usage.totalTokens === null ? null : usage.totalTokens * 12, jevRequests: jevRequests * 12, jevInputTokens: jevUsage.complete ? jevUsage.inputTokens! * 12 : null, jevOutputTokens: jevUsage.complete ? jevUsage.outputTokens! * 12 : null, note: "Linear estimate from one payment attempt per arm. Early failures shorten the pilot; other workflows and service conditions may differ." } : null,
     };
 }
 const format = (value: number | null, digits = 0) => value === null ? "N/A" : value.toFixed(digits);
@@ -53,6 +60,8 @@ export async function report(directory: string, plots = true): Promise<void> {
     })].join("\n") + "\n";
     await writeFile(join(directory, "runs.csv"), csv);
     let markdown = `# ${summary.kind === "pilot" ? "Pilot observations — not a performance conclusion" : "Workflow benchmark results"}\n\nModels: gpt-6-astra and gpt-5.6-luna, medium. Pi: 0.86.1. Jev: 1.13.0. Sieve: 7d54c8f.\n\nRun dates (UTC): ${rows.map(r => r.startedAt.slice(0, 10)).filter((v, i, a) => a.indexOf(v) === i).join(", ")}. See the [frozen manifest](manifest.json) for settings and source identity.\n\n`;
+    try { markdown += (await readFile(join(directory, "notes.md"), "utf8")).trim() + "\n\n"; }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
     markdown += "| Workflow | Arm | Success | Stage score | Median seconds (range) | Median total tokens | Jev fallbacks / calls |\n| --- | --- | ---: | ---: | ---: | ---: | ---: |\n";
     for (const g of summary.groups)
         markdown += `| ${g.workflow} | ${g.arm} | ${g.successes}/${g.n} | ${format(g.meanScore * 100, 1)}% | ${format(g.medianSeconds, 1)} (${format(g.minSeconds, 1)}–${format(g.maxSeconds, 1)}) | ${format(g.medianTokens)} | ${g.fallbacks}/${g.jevRequests} |\n`;
@@ -70,7 +79,7 @@ export async function report(directory: string, plots = true): Promise<void> {
         markdown += `| ${g.arm} | ${format(g.medianInput)} | ${format(g.medianCached)} | ${format(g.medianOutput)} | ${format(g.medianReasoning)} | ${format(g.jevInputTokens)} / ${format(g.jevOutputTokens)} |\n`;
     markdown += "\nMain-model components are medians; Jev values are sums of available responses. Reasoning is included in output, not added again. Missing usage stays null (shown as N/A); errored requests can leave usage unreported. These are reported token quantities, not a bill. Actual dollar cost is unknown; no subscription-token price is invented.\n";
     if (summary.projection)
-        markdown += `\n## Formal-batch estimate\n\nLinear projection: ${format(summary.projection.seconds / 3600, 2)} hours and ${format(summary.projection.totalTokens)} main-model tokens for 60 workflows (12 times the five-arm payment pilot). This is not a bound or a bill. Early failures shorten the pilot; other workflows, cache behavior, and Jev availability may change usage substantially. Formal execution requires user confirmation.\n`;
+        markdown += `\n## Formal-batch estimate\n\nLinear projection: ${format(summary.projection.seconds / 3600, 2)} hours and ${format(summary.projection.totalTokens)} main-model tokens for 60 workflows (12 times the five-arm payment pilot). Jev: ${summary.projection.jevRequests} requests, ${format(summary.projection.jevInputTokens)} input and ${format(summary.projection.jevOutputTokens)} output tokens; token projection is unavailable when pilot usage is incomplete. This is not a bound or a bill. Early failures shorten the pilot; other workflows, cache behavior, and Jev availability may change usage substantially. Formal execution requires user confirmation.\n`;
     markdown += "\n## Outcomes and failures\n\n";
     for (const r of rows) {
         const failed = r.stages.flatMap(s => stageChecks(r, s).filter(c => !c.passed).map(c => `stage ${s.stage}: ${c.id}`));
