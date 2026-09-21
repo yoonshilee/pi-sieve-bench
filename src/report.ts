@@ -66,6 +66,7 @@ export async function report(directory: string, plots = true): Promise<void> {
     })].join("\n") + "\n";
     await writeFile(join(directory, "runs.csv"), csv);
     let markdown = `# ${summary.kind === "pilot" ? "Pilot observations — not a performance conclusion" : "Workflow benchmark results"}\n\nModels: gpt-6-astra and gpt-5.6-luna, medium. Pi: 0.86.1. Jev: 1.13.0. Sieve: 7d54c8f.\n\nRun dates (UTC): ${rows.map(r => r.startedAt.slice(0, 10)).filter((v, i, a) => a.indexOf(v) === i).join(", ")}. See the [frozen manifest](manifest.json) for settings and source identity.\n\n`;
+    markdown += "**Historical v0.1 context-filtering experiment. These measurements do not evaluate v0.2 on-demand retrieval.**\n\n";
     try { markdown += (await readFile(join(directory, "notes.md"), "utf8")).trim() + "\n\n"; }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
     markdown += "| Workflow | Arm | Success | Stage score | Median seconds (range) | Median total tokens | Jev fallbacks / calls |\n| --- | --- | ---: | ---: | ---: | ---: | ---: |\n";

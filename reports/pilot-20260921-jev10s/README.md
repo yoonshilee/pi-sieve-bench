@@ -4,6 +4,8 @@ Models: gpt-6-astra and gpt-5.6-luna, medium. Pi: 0.86.1. Jev: 1.13.0. Sieve: 7d
 
 Run dates (UTC): 2026-09-21. See the [frozen manifest](manifest.json) for settings and source identity.
 
+**Historical v0.1 context-filtering experiment. These measurements do not evaluate v0.2 on-demand retrieval.**
+
 **Revised pilot, 10-second Jev timeout.** All ten Jev requests returned HTTP 200 and
 passed the pinned plugin's validation. The initial 1.5-second pilot is retained
 [separately](../pilot-20260921/README.md); its measurements are not pooled here.

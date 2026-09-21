@@ -4,6 +4,8 @@ Models: gpt-6-astra and gpt-5.6-luna, medium. Pi: 0.86.1. Jev: 1.13.0. Sieve: 7d
 
 Run dates (UTC): 2026-09-21. See the [frozen manifest](manifest.json) for settings and source identity.
 
+**Historical v0.1 context-filtering experiment. These measurements do not evaluate v0.2 on-demand retrieval.**
+
 | Workflow | Arm | Success | Stage score | Median seconds (range) | Median total tokens | Jev fallbacks / calls |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | payments | native | 1/1 | 100.0% | 369.3 (369.3–369.3) | 343184 | 0/0 |

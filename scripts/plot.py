@@ -15,15 +15,17 @@ import numpy as np
 
 
 def main():
-    """Create readable benchmark charts with hand-drawn titles and outlines.
+    """Render saved measurements with readable handwritten labels and pale cells.
 
     Reads a report directory from the first command-line argument and writes
     benchmark.png and benchmark.svg into that same directory.
     """
-    font_manager.fontManager.addfont(Path(__file__).resolve().parents[1] / "assets/fonts/Caveat.ttf")
+    font_dir = Path(__file__).resolve().parents[1] / "assets/fonts"
+    for filename in ["Caveat.ttf", "ComicNeue-Regular.ttf", "ComicNeue-Bold.ttf"]:
+        font_manager.fontManager.addfont(font_dir / filename)
     paper, ink = "#fffdf7", "#283743"
     plt.rcParams.update({
-        "font.family": "DejaVu Sans", "font.size": 12,
+        "font.family": "Comic Neue", "font.size": 12,
         "path.sketch": (0.7, 100, 2),
         "figure.facecolor": paper, "axes.facecolor": paper,
         "text.color": ink, "axes.labelcolor": ink, "axes.edgecolor": ink,
@@ -44,7 +46,9 @@ def main():
     row_labels = [arm_names[g["arm"]] + (f" / {g['workflow']}" if len(workflows) > 1 else "") for g in groups]
     fig, axes = plt.subplots(3, 1, figsize=(max(12, len(groups) * 1.1), 13))
     fig.suptitle("Pi Sieve | " + ("Pilot observations (n=1 per arm)" if rows[0]["kind"] == "pilot" else "Long-workflow benchmark"), fontsize=28, fontfamily="Caveat")
-    fig.text(0.5, 0.935, "Workflows: " + ", ".join(workflows), ha="center", fontsize=12)
+    legacy = all(row["versions"]["sieve"].startswith("7d54c8f") for row in rows)
+    subtitle = "Historical v0.1 context filtering | " if legacy else ""
+    fig.text(0.5, 0.935, subtitle + "Workflows: " + ", ".join(workflows), ha="center", fontsize=12)
     for i, group in enumerate(groups):
         matching = [r for r in rows if r["workflow"] == group["workflow"] and r["arm"] == group["arm"]]
         for j, row in enumerate(matching):

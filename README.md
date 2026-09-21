@@ -8,7 +8,8 @@ credentials. Live runs consume the operator's own model and TypeSafe allowance.
 This repository contains the complete experimental setup, results, failure
 analysis, and sanitized run data. The [Pi Sieve README](https://github.com/yoonshilee/pi-sieve#preliminary-benchmark)
 shows a brief visual comparison. **Only pilot data is available; no formal batch
-has been run.**
+has been run.** All saved measurements below use the historical v0.1 context
+filtering implementation at `7d54c8f`. They do not evaluate v0.2 on-demand retrieval.
 
 [Experimental setup](#experiment) · [Results](#results) · [Reproduction](#setup-and-commands)
 
@@ -115,12 +116,38 @@ here for methods, results, and limitations. Figures and sanitized data are publi
 in this repository. Pilot observations remain separate from any future confirmed
 formal batch and do not establish general performance gains.
 
-Charts use Matplotlib's sketch styling and the bundled
-[Caveat font](https://github.com/google/fonts/tree/5571d84c0d8c70ec1af4f64072d8c5cf1e4e9643/ofl/caveat),
-distributed under the [SIL Open Font License](assets/fonts/OFL.txt). Rendering is
-offline; hand-drawn titles and outlines retain regular-font labels and numbers for
-readability. Heatmap cells use pale green for all checks passed, amber for partial
-passes, and pink for zero or unrun stages. Styling does not change the measurements.
+Charts use Matplotlib's sketch styling, bundled Caveat titles, and Comic Neue
+labels, legends, and numbers. The fonts are distributed under the SIL Open Font
+License: [Caveat](assets/fonts/OFL.txt) and [Comic Neue](assets/fonts/ComicNeue-OFL.txt).
+Comic Neue Regular and Bold are unmodified files from
+[Google Fonts at e44c4b0](https://github.com/google/fonts/tree/e44c4b011a820c2cbe2fd2cfa8052037d7edb571/ofl/comicneue);
+Caveat comes from [5571d84](https://github.com/google/fonts/tree/5571d84c0d8c70ec1af4f64072d8c5cf1e4e9643/ofl/caveat).
+Rendering is offline. Heatmap cells use pale green for all checks passed, amber
+for partial passes, and pink for zero or unrun stages. Styling does not change
+any measurements.
+
+## Next experiment: on-demand retrieval
+
+Pi Sieve v0.2 moves Jev selection into `sieve_search`. It leaves existing messages,
+skills, and tool definitions intact. The current runner intentionally remains
+pinned to v0.1 so these experiments stay reproducible. Its five historical arms
+must not be relabeled as a v0.2 experiment.
+
+No live v0.2 benchmark has run. The plugin's offline tests use the real Pi SDK
+with scripted model responses to verify zero Jev calls without retrieval, one
+batch per search, local fallback, cancellation, and unchanged message prefixes.
+Mocked responses establish neither Jev relevance nor server cache hits.
+
+A future separately frozen experiment should compare the same `sieve_search`
+tool and catalog with Jev enabled versus local-only matching, separately for each
+main model. Keep queries identical for retrieval-quality checks; also measure
+complete tasks where the model chooses whether to retrieve. Record necessary-item
+recall, independent task success, main-model requests, uncached/cached input,
+output, Jev input/output, fallback rate, and total elapsed time. Preserve missing
+usage as null. Fewer total tokens alone do not establish lower cost. A speed or
+cost claim requires the saved main-model work to exceed the extra Jev overhead
+without sacrificing correctness. Actual prices or invoices are needed for money
+comparisons; subscription tokens are not charges.
 
 ## Privacy and repository checks
 
