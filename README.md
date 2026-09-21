@@ -14,7 +14,7 @@ credentials. Live runs consume the operator's own model and TypeSafe allowance.
 | Reasoning | medium |
 | Sieve commit | 7d54c8f2865d81113688e40b79abcef2956f6a32 |
 | Jev | jev-1.13.0 |
-| Sieve settings | Published defaults: 1.5 seconds, 40 candidates, 6 documents, 8,000 characters |
+| Sieve settings | 10-second timeout; published defaults for 40 candidates, 6 documents, 8,000 characters, and thresholds |
 | Limits | 5 minutes and 30 main-model requests per stage |
 | Formal design | 4 workflows × 5 arms × 3 repetitions = 60 runs / 300 stages |
 | Pilot | Payments only, one complete run per arm; excluded from formal results |
@@ -98,7 +98,7 @@ modified nor retried. `/sieve status` supplies fallback and selection diagnostic
 Measured stage time includes selection, model work, and tools. Initialization,
 external grading, and between-stage reporting are recorded separately or excluded.
 All run times are shown with success counts. Speedup ratios use successful matched
-workflow/repetition pairs only; faster failures cannot become speedup claims.
+workflow/repetition pairs only, with all five Jev selections successful in the Sieve arm; fallback runs cannot become Jev speedup claims.
 Small sample ranges and individual points are shown, without a statistical
 significance claim. Token quantities are not invoices; subscription pricing and
 missing Jev usage prevent a trustworthy dollar total.
@@ -137,5 +137,59 @@ CI performs offline checks and plot generation without real credentials.
 
 ## Results
 
-No formal benchmark has been run. Pilot observations will be linked here when
-complete and must not be interpreted as a general speed or accuracy claim.
+No formal benchmark has been run. The first pilot below is an availability finding,
+not a valid comparison of Jev's benefit. A revised five-arm pilot uses a 10-second
+Jev timeout and the corrected grader; its manifest freezes that change explicitly.
+
+### Initial pilot: 2026-09-21, 1.5-second timeout
+
+| Arm | Task success | Stage checks | Workflow seconds | Main-model tokens | Jev success / calls |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Astra Native | 1/1 | 100% | 369.254 | 343,184 | N/A |
+| Astra Full Context | 1/1 | 100% | 391.248 | 439,193 | N/A |
+| Astra Sieve | 1/1 | 100% | 357.435 | 352,118 | 0/5 |
+| Luna Native | 0/1 | 80% | 214.568 | 190,624 | N/A |
+| Luna Sieve | 1/1 | 100% | 333.530 | 498,612 | 1/5 |
+
+The Luna Native attempt stopped on a provider error in stage 4; stage 5 was not
+run. Its shorter duration is not evidence of superior speed. There were eight
+Jev timeouts, one service error, and one successful selection. No valid Jev
+speedup pairs remain. Total reported main-model use: **1,823,731 tokens**;
+workflow execution: **27.77 minutes**. Missing usage on failed requests is unknown,
+not zero. Actual dollar charges are not available.
+
+The initial grader incorrectly required string-only evidence and a new test
+filename. Uniform review accepted structured evidence and tests added to the
+existing file, correcting three stage-one checks and one final artifact check.
+Original verdicts, including Luna Sieve's original failed success flag, are retained.
+Timing and token measurements are unchanged. See the
+[complete report](reports/pilot-20260921/README.md) and
+[review artifacts](reports/pilot-20260921/grading-review.json).
+
+![Initial pilot; 9 of 10 Jev requests fell back](reports/pilot-20260921/benchmark.png)
+
+### Why the timeout changed
+
+The pinned selector starts `AbortSignal.timeout(config.timeoutMs)` before `fetch`
+and applies it to the whole response. Five separate fresh-process probes using
+the original payment prompts and candidate catalog all returned HTTP 200 under a
+10-second limit: **1,608, 1,522, 1,552, 1,384, and 1,396 ms**. Three would exceed the
+original 1,500 ms deadline. Almost all elapsed time preceded the response headers.
+Five probes in one process also succeeded (448–1,361 ms). Connection reuse, service
+load, and server caching are not isolated by this small diagnosis. Credentials and
+request schema worked; the earlier generic service error cannot be reconstructed
+because its HTTP status was not recorded.
+
+[Fresh-process measurements](reports/pilot-20260921/jev-fresh-process-diagnostic.json)
+and [same-process measurements](reports/pilot-20260921/jev-workflow-diagnostic.json)
+are separate from workflow metrics. The benchmark now materializes the following
+project configuration identically for every arm:
+
+```json
+{ "timeoutMs": 10000 }
+```
+
+This changes the maximum wait, not a fixed sleep. Sieve's production commit and
+selection thresholds stay pinned, with no retries. Future observations record
+HTTP status and header latency without response bodies. The original batch is
+preserved; a new batch ID is required for the revised settings.

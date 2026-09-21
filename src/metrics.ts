@@ -39,6 +39,7 @@ export type Stage = {
         requests: number;
         inputTokens: number | null;
         outputTokens: number | null;
+        responses?: { httpStatus: number | null; headersMs: number; errorKind: "aborted" | "network_error" | null }[];
     };
     sieve: Record<string, string | number | boolean> | null;
     answer: string;
@@ -64,6 +65,14 @@ export type Run = {
     elapsedMs: number;
     gradeMs: number;
     stages: Stage[];
+    checkReviews?: {
+        stage: number;
+        id: string;
+        originalPassed: boolean;
+        passed: boolean;
+        reason: string;
+        artifactSha256: string;
+    }[];
 };
 export function newStage(stage: number): Stage { return { stage, status: "running", elapsedMs: 0, gradeMs: 0, checks: [], requests: 0, requestBytes: [], contextChars: [], visibleSkills: [], visibleTools: [], toolCalls: 0, toolErrors: 0, recoveries: 0, usage: emptyUsage(), jev: { requests: 0, inputTokens: null, outputTokens: null }, sieve: null, answer: "" }; }
 export function schedule(kind: "pilot" | "formal"): {
@@ -79,14 +88,32 @@ export function schedule(kind: "pilot" | "formal"): {
                 result.push({ workflow, arm: ARMS[(offset + (repeat - 1) * workflows.length + workflows.indexOf(workflow)) % ARMS.length], repeat });
     return result;
 }
-export function score(run: Run): number { return run.stages.reduce((total, s) => total + (s.checks.length ? s.checks.filter(c => c.passed).length / s.checks.length : 0), 0) / 5; }
+export function stageChecks(run: Run, stage: Stage, reviewed = true): Check[] {
+    return stage.checks.map(check => {
+        const review = reviewed ? run.checkReviews?.find(r => r.stage === stage.stage && r.id === check.id && r.originalPassed === check.passed) : undefined;
+        return review ? { ...check, passed: review.passed } : check;
+    });
+}
+export function stageScore(run: Run, stage: Stage, reviewed = true): number {
+    const checks = stageChecks(run, stage, reviewed);
+    return checks.length ? checks.filter(c => c.passed).length / checks.length : 0;
+}
+export function score(run: Run, reviewed = true): number { return run.stages.reduce((total, s) => total + stageScore(run, s, reviewed), 0) / 5; }
+export function isSuccessful(run: Run): boolean {
+    if (!run.checkReviews?.length) return run.success;
+    const final = run.stages.find(s => s.stage === 5);
+    return run.status === "completed" && run.stages.length === 5 && run.stages.every(s => s.status === "completed") && !!final?.checks.length && stageChecks(run, final).every(c => c.passed);
+}
+export function hasValidSelection(run: Run): boolean {
+    return armConfig(run.arm).mode !== "sieve" || (run.stages.length === 5 && run.stages.every(s => s.sieve?.reason === "none"));
+}
 export function median(values: number[]): number | null { if (!values.length)
     return null; const ordered = [...values].sort((a, b) => a - b), mid = Math.floor(ordered.length / 2); return ordered.length % 2 ? ordered[mid] : (ordered[mid - 1] + ordered[mid]) / 2; }
 export function pairedSpeedup(rows: Run[], baseline: Arm, treatment: Arm = "sieve"): {
     n: number;
     ratio: number | null;
 } {
-    const ratios = rows.filter(r => r.arm === treatment && r.success).flatMap(r => { const b = rows.find(b => b.workflow === r.workflow && b.repeat === r.repeat && b.arm === baseline && b.success); return b && r.elapsedMs > 0 ? [b.elapsedMs / r.elapsedMs] : []; });
+    const ratios = rows.filter(r => r.arm === treatment && isSuccessful(r) && hasValidSelection(r)).flatMap(r => { const b = rows.find(b => b.workflow === r.workflow && b.repeat === r.repeat && b.arm === baseline && isSuccessful(b) && hasValidSelection(b)); return b && r.elapsedMs > 0 ? [b.elapsedMs / r.elapsedMs] : []; });
     return { n: ratios.length, ratio: median(ratios) };
 }
 export function sanitize(text: string, root: string): string {

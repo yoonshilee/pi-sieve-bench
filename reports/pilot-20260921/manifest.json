@@ -1,0 +1,63 @@
+{
+  "batch": "pilot-20260921",
+  "kind": "pilot",
+  "createdAt": "2026-09-21T07:09:45.109Z",
+  "sourceHash": "dd26583adda58dc871dbdb870d217eeff313233fd7294ad8182e6a7ac733bf93",
+  "harnessCommit": "50da1e74a2441504bd560e3baa9866e50950c642",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-6-astra",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "sieve": "7d54c8f2865d81113688e40b79abcef2956f6a32"
+  },
+  "limits": {
+    "stageMs": 300000,
+    "modelRequests": 30
+  },
+  "schedule": [
+    {
+      "workflow": "payments",
+      "arm": "native",
+      "repeat": 1,
+      "model": "gpt-6-astra",
+      "mode": "native"
+    },
+    {
+      "workflow": "payments",
+      "arm": "full",
+      "repeat": 1,
+      "model": "gpt-6-astra",
+      "mode": "full"
+    },
+    {
+      "workflow": "payments",
+      "arm": "sieve",
+      "repeat": 1,
+      "model": "gpt-6-astra",
+      "mode": "sieve"
+    },
+    {
+      "workflow": "payments",
+      "arm": "luna-native",
+      "repeat": 1,
+      "model": "gpt-5.6-luna",
+      "mode": "native"
+    },
+    {
+      "workflow": "payments",
+      "arm": "luna-sieve",
+      "repeat": 1,
+      "model": "gpt-5.6-luna",
+      "mode": "sieve"
+    }
+  ],
+  "node": "v22.23.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cachePolicy": "No cache warming; provider cache cannot be cleared; record reported usage.",
+  "compaction": false,
+  "retries": false,
+  "formalAuthorized": false
+}

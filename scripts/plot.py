@@ -26,15 +26,15 @@ def main():
         matching = [r for r in rows if r["workflow"] == group["workflow"] and r["arm"] == group["arm"]]
         for j, row in enumerate(matching):
             offset = (j - (len(matching) - 1) / 2) * 0.07
-            axes[0].scatter(i + offset, row["elapsedMs"] / 1000, color=colors[group["arm"]], marker="o" if row["success"] else "x", s=65, zorder=3)
+            reviewed_success = row.get("reviewedSuccess", row["success"])
+            axes[0].scatter(i + offset, row["elapsedMs"] / 1000, color=colors[group["arm"]], marker="o" if reviewed_success else "x", s=65, zorder=3)
         axes[0].hlines(group["medianSeconds"], i - 0.2, i + 0.2, color=colors[group["arm"]], linewidth=3)
     axes[0].set(ylabel="Workflow seconds", title="Latency: points are runs; lines are medians; crosses mark failure", xticks=range(len(labels)), xticklabels=labels)
     axes[0].set_ylim(bottom=0)
     axes[0].grid(axis="y", alpha=0.2)
     matrix = []
     for group in groups:
-        matching = [r for r in rows if r["workflow"] == group["workflow"] and r["arm"] == group["arm"]]
-        matrix.append([np.mean([sum(c["passed"] for c in r["stages"][s]["checks"]) / len(r["stages"][s]["checks"]) if len(r["stages"]) > s and r["stages"][s]["checks"] else 0 for r in matching]) * 100 for s in range(5)])
+        matrix.append([value * 100 for value in group["stageScores"]])
     axes[1].imshow(matrix, aspect="auto", vmin=0, vmax=100, cmap="YlGnBu")
     axes[1].set(title="Independent stage checks passed (%)", xticks=range(5), xticklabels=[f"Stage {i}" for i in range(1, 6)], yticks=range(len(labels)), yticklabels=[label.replace("\n", " / ") for label in labels])
     for y, row in enumerate(matrix):
@@ -45,10 +45,11 @@ def main():
         values = [g[field] if g[field] is not None else 0 for g in groups]
         axes[2].bar(range(len(groups)), values, bottom=bottom, label=label, color=color)
         bottom += values
-    axes[2].set(title="Median reported main-model tokens by component (missing components are omitted)", ylabel="Tokens", xticks=range(len(labels)), xticklabels=labels)
-    axes[2].legend(frameon=False)
+    axes[2].set(title="Reported main-model tokens by component (medians; missing values omitted)", ylabel="Tokens", xticks=range(len(labels)), xticklabels=labels)
+    axes[2].legend(loc="upper left", frameon=True, facecolor="white", framealpha=0.95)
     axes[2].grid(axis="y", alpha=0.2)
-    fig.text(0.01, 0, "gpt-6-astra + gpt-5.6-luna / medium · Pi 0.86.1 · Jev 1.13.0 · Synthetic projects; no general performance claim", fontsize=9, color="#526987")
+    fig.get_layout_engine().set(rect=(0, 0.035, 1, 0.97))
+    fig.text(0.01, 0.005, "gpt-6-astra + gpt-5.6-luna / medium · Pi 0.86.1 · Jev 1.13.0 · Synthetic projects; no general performance claim", fontsize=9, color="#526987")
     for suffix in ["png", "svg"]:
         fig.savefig(directory / f"benchmark.{suffix}", dpi=160, facecolor="white", bbox_inches="tight")
     plt.close(fig)

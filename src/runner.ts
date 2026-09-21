@@ -29,6 +29,20 @@ export async function treeHash(root: string): Promise<string> {
     return hash.digest("hex");
 }
 export async function atomicJson(path: string, value: unknown): Promise<void> { await mkdir(join(path, ".."), { recursive: true }); await writeFile(path + ".tmp", JSON.stringify(value, null, 2) + "\n"); await rename(path + ".tmp", path); }
+export async function preserveExistingRun(path: string): Promise<boolean> {
+    let prior: Run;
+    try { prior = JSON.parse(await readFile(path, "utf8")); }
+    catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+        throw error;
+    }
+    if (prior.status === "running") {
+        prior.status = "interrupted";
+        prior.success = false;
+        await atomicJson(path, prior);
+    }
+    return true;
+}
 export async function runWorkflow(options: {
     root: string;
     record: string;
@@ -130,7 +144,9 @@ export async function runWorkflow(options: {
             current.toolErrors++;
         if (event.type === "message_end" && event.message.role === "assistant") {
             const msg = event.message;
-            addUsage(current.usage, msg.usage);
+            // Providers may emit all-zero placeholders when a request fails without usage.
+            if (!["error", "aborted"].includes(msg.stopReason) || Object.values(msg.usage).some(v => typeof v === "number" && v > 0))
+                addUsage(current.usage, msg.usage);
             if (msg.stopReason === "error" && current.status === "running")
                 current.status = "provider_error";
             if (msg.stopReason === "aborted" && current.status === "running")
@@ -150,7 +166,16 @@ export async function runWorkflow(options: {
         if (url !== "https://api.typesafe.ai/v1/systemone" || !observed)
             return originalFetch(input, init);
         observed.jev.requests++;
-        const response = await originalFetch(input, init);
+        const started = performance.now();
+        let response: Response;
+        observed.jev.responses ??= [];
+        try {
+            response = await originalFetch(input, init);
+            observed.jev.responses.push({ httpStatus: response.status, headersMs: Math.round(performance.now() - started), errorKind: null });
+        } catch (error) {
+            observed.jev.responses.push({ httpStatus: null, headersMs: Math.round(performance.now() - started), errorKind: init?.signal?.aborted ? "aborted" : "network_error" });
+            throw error;
+        }
         if (response.ok) {
             const read = response.clone().json().then((body: any) => { if (Number.isSafeInteger(body.usage?.input_tokens))
                 observed.jev.inputTokens = (observed.jev.inputTokens ?? 0) + body.usage.input_tokens; if (Number.isSafeInteger(body.usage?.output_tokens))

@@ -2,9 +2,10 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { schedule, armConfig, VERSIONS, LIMITS, type Run } from "./metrics.ts";
-import { atomicJson, runWorkflow } from "./runner.ts";
+import { schedule, armConfig, VERSIONS, LIMITS } from "./metrics.ts";
+import { atomicJson, preserveExistingRun, runWorkflow } from "./runner.ts";
 import { report } from "./report.ts";
+import { SIEVE_CONFIG } from "./fixtures.ts";
 export async function sourceHash(): Promise<string> { const hash = createHash("sha256"); for (const path of ["package-lock.json", ...(await readdir("src")).filter(x => x.endsWith(".ts")).sort().map(x => `src/${x}`)])
     hash.update(path + "\0").update(await readFile(path)); return hash.digest("hex"); }
 async function exists(path: string) { try {
@@ -46,18 +47,12 @@ async function main(): Promise<void> {
             throw new Error("Cannot resume a batch with changed experiment code.");
     }
     else
-        await atomicJson(manifestPath, { batch, kind, createdAt: new Date().toISOString(), sourceHash: fingerprint, harnessCommit: commit, versions: VERSIONS, limits: LIMITS, schedule: schedule(kind).map(item => ({...item, ...armConfig(item.arm)})), node: process.version, platform: process.platform, arch: process.arch, cachePolicy: "No cache warming; provider cache cannot be cleared; record reported usage.", compaction: false, retries: false, formalAuthorized: kind === "formal" });
+        await atomicJson(manifestPath, { batch, kind, createdAt: new Date().toISOString(), sourceHash: fingerprint, harnessCommit: commit, versions: VERSIONS, sieveConfig: SIEVE_CONFIG, limits: LIMITS, schedule: schedule(kind).map(item => ({...item, ...armConfig(item.arm)})), node: process.version, platform: process.platform, arch: process.arch, cachePolicy: "No cache warming; provider cache cannot be cleared; record reported usage.", compaction: false, retries: false, formalAuthorized: kind === "formal" });
     await mkdir(join(output, "runs"), { recursive: true });
     let errors = 0;
     for (const item of schedule(kind)) {
         const id = `${item.workflow}-${item.repeat}-${item.arm}`, record = join(output, "runs", id + ".json");
-        if (await exists(record)) {
-            const prior: Run = JSON.parse(await readFile(record, "utf8"));
-            if (prior.status === "running") {
-                prior.status = "interrupted";
-                prior.success = false;
-                await atomicJson(record, prior);
-            }
+        if (await preserveExistingRun(record)) {
             console.log(`Preserved existing run: ${id}`);
             continue;
         }

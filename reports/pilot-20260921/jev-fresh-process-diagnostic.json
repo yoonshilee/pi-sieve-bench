@@ -1,0 +1,77 @@
+{
+  "purpose": "Post-pilot diagnosis, excluded from workflow metrics. Each payment stage is evaluated once in a fresh Node process using the pinned selector, original catalog, original prompt window, and a 10-second timeout. No main-model calls or retries. Prompt repetition and server caching are uncontrolled.",
+  "model": "jev-1.13.0",
+  "timeoutMs": 10000,
+  "results": [
+    {
+      "stage": 1,
+      "startedAt": "2026-09-21T07:42:52.004Z",
+      "questions": 41,
+      "requestBytes": 18296,
+      "httpStatus": 200,
+      "headersMs": 1605,
+      "elapsedMs": 1608,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 6,
+      "inputTokens": 5121
+    },
+    {
+      "stage": 2,
+      "startedAt": "2026-09-21T07:42:53.994Z",
+      "questions": 41,
+      "requestBytes": 18525,
+      "httpStatus": 200,
+      "headersMs": 1520,
+      "elapsedMs": 1522,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 4,
+      "inputTokens": 5168
+    },
+    {
+      "stage": 3,
+      "startedAt": "2026-09-21T07:42:55.899Z",
+      "questions": 41,
+      "requestBytes": 18776,
+      "httpStatus": 200,
+      "headersMs": 1549,
+      "elapsedMs": 1552,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 5,
+      "inputTokens": 5214
+    },
+    {
+      "stage": 4,
+      "startedAt": "2026-09-21T07:42:57.835Z",
+      "questions": 41,
+      "requestBytes": 18615,
+      "httpStatus": 200,
+      "headersMs": 1381,
+      "elapsedMs": 1384,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 6,
+      "inputTokens": 5170
+    },
+    {
+      "stage": 5,
+      "startedAt": "2026-09-21T07:42:59.598Z",
+      "questions": 41,
+      "requestBytes": 18700,
+      "httpStatus": 200,
+      "headersMs": 1394,
+      "elapsedMs": 1396,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 5,
+      "inputTokens": 5184
+    }
+  ]
+}

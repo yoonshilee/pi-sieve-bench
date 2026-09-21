@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 const [workflow, rawStage] = process.argv.slice(2);
@@ -25,13 +27,15 @@ const load = (file: string) => import(pathToFileURL(resolve(file)).href);
 const json = async (file: string) => JSON.parse(await readFile(file, "utf8"));
 const rejection = async (fn: () => unknown, code: string) => assert.rejects(async () => fn(), { message: code });
 const throws = (fn: () => unknown, code: string) => assert.throws(fn, { message: code });
+// Prompts require evidence, but do not prescribe a string-only JSON representation.
+const evidenceText = (value: unknown): string => typeof value === "string" ? value : value && typeof value === "object" ? Object.values(value).map(evidenceText).join(" ") : "";
 async function payments(): Promise<void> {
     const { createStore } = await load("src/store.ts");
     const { Gateway } = await load("src/gateway.ts");
     const { pay, handleWebhook } = await load("src/payments.ts");
     const req = { key: "same", customerId: "customer", amountCents: 1250 };
     if (stage === 1) {
-        await check("diagnosis", async () => { const d = await json("diagnosis.json"); assert.equal(d.issue, "duplicate-charge"); assert.equal(d.operation, "pay"); assert.equal(d.observedCharges, 2); assert(d.evidence?.length > 20); });
+        await check("diagnosis", async () => { const d = await json("diagnosis.json"); assert.equal(d.issue, "duplicate-charge"); assert.equal(d.operation, "pay"); assert.equal(d.observedCharges, 2); assert(evidenceText(d.evidence).trim().length > 20); });
         await check("reproduction-script", async () => assert((await readFile("scripts/reproduce.ts", "utf8")).includes("pay")));
         await check("bug-observed-without-premature-fix", async () => { const s = createStore(), g = new Gateway(); await pay(s, g, req); await pay(s, g, req); assert.equal(g.calls.length, 2); });
         return;
@@ -67,7 +71,7 @@ async function tenantApi(): Promise<void> {
     const { listItems, getItem, legacyList } = await load("src/api.ts");
     const rows = [{ id: "b", tenantId: "north", name: "B", secret: 1 }, { id: "a", tenantId: "south", name: "South" }, { id: "a", tenantId: "north", name: "A" }, { id: "c", tenantId: "north", name: "C" }];
     if (stage === 1) {
-        await check("api-analysis", async () => { const d = await json("api-analysis.json"); assert.equal(d.issue, "cross-tenant-read"); assert.deepEqual([...d.exports].sort(), ["getItem", "legacyList", "listItems"]); assert(d.evidence?.length > 20); });
+        await check("api-analysis", async () => { const d = await json("api-analysis.json"); assert.equal(d.issue, "cross-tenant-read"); assert.deepEqual([...d.exports].sort(), ["getItem", "legacyList", "listItems"]); assert(evidenceText(d.evidence).trim().length > 20); });
         await check("reproduction-script", async () => assert((await readFile("scripts/reproduce.ts", "utf8")).length > 40));
         await check("old-behavior-preserved", () => assert.equal(listItems(rows, { tenantId: "north" }).items.length, 4));
         return;
@@ -136,7 +140,7 @@ async function incident(): Promise<void> {
     const { deliver } = await load("src/worker.ts");
     const { createDispatcher, dispatch } = await load("src/dispatcher.ts");
     if (stage === 1) {
-        await check("incident-evidence", async () => { const d = await json("incident-analysis.json"); assert.equal(d.rootCause, "retry-storm"); assert(d.evidenceIds.includes("q-101") && d.evidenceIds.includes("q-102")); assert(d.explanation?.length > 20); });
+        await check("incident-evidence", async () => { const d = await json("incident-analysis.json"); assert.equal(d.rootCause, "retry-storm"); assert(d.evidenceIds.includes("q-101") && d.evidenceIds.includes("q-102")); assert(evidenceText(d.explanation).trim().length > 20); });
         return;
     }
     await check("permanent-statuses", () => { for (const status of [200, 201, 204, 301, 400, 401, 403, 404, 409, 501])
@@ -169,7 +173,13 @@ try {
     await graders[workflow]();
     if (stage === 5) {
         await check("verification-artifact", async () => { const v = await json("verification.json"); assert.equal(v.completed, true); assert(v.checks.length > 0); });
-        await check("regression-tests-added", async () => { const { readdir } = await import('node:fs/promises'); const files = await readdir("test"); assert(files.some(x => x !== "public.test.ts" && x.endsWith(".test.ts"))); });
+        await check("regression-tests-added", async () => {
+            const files = (await readdir("test")).filter(x => x.endsWith(".test.ts")).sort().map(x => `test/${x}`);
+            assert(files.length > 0);
+            const { stdout } = await promisify(execFile)(process.execPath, ["--test", "--test-reporter=tap", ...files], { timeout: 1200, maxBuffer: 512000 });
+            // Every starter has one public test. Additions may live in the existing file.
+            assert(Number(stdout.match(/^# pass (\d+)$/m)?.[1]) > 1);
+        });
     }
 }
 catch {

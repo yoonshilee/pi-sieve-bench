@@ -1,0 +1,30 @@
+{
+  "purpose": "Separate post-pilot service probe; excluded from workflow metrics. Fictional summaries; no workflow requests replayed. A 10-second diagnostic timeout differs from the frozen 1.5-second pilot.",
+  "model": "jev-1.13.0",
+  "results": [
+    {
+      "questions": 1,
+      "timeoutMs": 10000,
+      "startedAt": "2026-09-21T07:38:48.436Z",
+      "httpStatus": 200,
+      "elapsedMs": 1261,
+      "status": "success",
+      "usage": {
+        "inputTokens": 366,
+        "outputTokens": 21
+      }
+    },
+    {
+      "questions": 41,
+      "timeoutMs": 10000,
+      "startedAt": "2026-09-21T07:38:49.698Z",
+      "httpStatus": 200,
+      "elapsedMs": 1584,
+      "status": "success",
+      "usage": {
+        "inputTokens": 3897,
+        "outputTokens": 732
+      }
+    }
+  ]
+}

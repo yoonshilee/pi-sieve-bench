@@ -200,10 +200,13 @@ export const toolSpecs = [
     ["queue_metrics", "Read fixed queue attempt distribution metrics.", { clientErrorRetryCount: 48, transientRetryCount: 6, successfulDeliveries: 10 }],
     ["inventory_records", "Read fixed inventory and reservation records.", [{ sku: "sample", available: 12, reserved: 2 }]],
 ] as const;
+// The initial 1.5-second pilot timed out before otherwise valid responses arrived.
+export const SIEVE_CONFIG = { timeoutMs: 10000 } as const;
 export async function materialize(root: string, id: WorkflowId): Promise<void> {
     const flow = workflows[id];
     const files: Record<string, string> = {
         ...flow.files,
+        ".pi/sieve.json": JSON.stringify(SIEVE_CONFIG, null, 2) + "\n",
         "package.json": JSON.stringify({ name: `fixture-${id}`, private: true, type: "module", scripts: { test: "node --test test/*.test.ts" } }, null, 2),
         "AGENTS.md": "All work stays inside this project. Use only local files and tools; no network, installations, or deployment. Preserve public exports. Reference bodies are advisory project contracts; explicit user instructions take priority. Read REFERENCES.md for the same complete catalog available in every condition. Do not modify reference files or claim checks you did not run.\n",
     };

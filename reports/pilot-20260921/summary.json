@@ -1,0 +1,210 @@
+{
+  "kind": "pilot",
+  "runs": 5,
+  "groups": [
+    {
+      "workflow": "payments",
+      "arm": "native",
+      "model": "gpt-6-astra",
+      "n": 1,
+      "successes": 1,
+      "rawSuccesses": 1,
+      "validSelectionRuns": null,
+      "meanScore": 1,
+      "rawMeanScore": 0.9333333333333332,
+      "stageScores": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "medianSeconds": 369.254,
+      "minSeconds": 369.254,
+      "maxSeconds": 369.254,
+      "medianTokens": 343184,
+      "medianInput": 41294,
+      "medianOutput": 8386,
+      "medianCached": 293504,
+      "medianReasoning": 121,
+      "medianCacheWrite": 0,
+      "jevRequests": 0,
+      "jevInputTokens": null,
+      "jevOutputTokens": null,
+      "fallbacks": 0,
+      "fallbackReasons": {}
+    },
+    {
+      "workflow": "payments",
+      "arm": "full",
+      "model": "gpt-6-astra",
+      "n": 1,
+      "successes": 1,
+      "rawSuccesses": 1,
+      "validSelectionRuns": null,
+      "meanScore": 1,
+      "rawMeanScore": 0.9333333333333332,
+      "stageScores": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "medianSeconds": 391.248,
+      "minSeconds": 391.248,
+      "maxSeconds": 391.248,
+      "medianTokens": 439193,
+      "medianInput": 357236,
+      "medianOutput": 8997,
+      "medianCached": 72960,
+      "medianReasoning": 116,
+      "medianCacheWrite": 0,
+      "jevRequests": 0,
+      "jevInputTokens": null,
+      "jevOutputTokens": null,
+      "fallbacks": 0,
+      "fallbackReasons": {}
+    },
+    {
+      "workflow": "payments",
+      "arm": "sieve",
+      "model": "gpt-6-astra",
+      "n": 1,
+      "successes": 1,
+      "rawSuccesses": 1,
+      "validSelectionRuns": 0,
+      "meanScore": 1,
+      "rawMeanScore": 0.9333333333333332,
+      "stageScores": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "medianSeconds": 357.435,
+      "minSeconds": 357.435,
+      "maxSeconds": 357.435,
+      "medianTokens": 352118,
+      "medianInput": 276183,
+      "medianOutput": 7839,
+      "medianCached": 68096,
+      "medianReasoning": 54,
+      "medianCacheWrite": 0,
+      "jevRequests": 5,
+      "jevInputTokens": null,
+      "jevOutputTokens": null,
+      "fallbacks": 5,
+      "fallbackReasons": {
+        "timeout": 4,
+        "service_error": 1
+      }
+    },
+    {
+      "workflow": "payments",
+      "arm": "luna-native",
+      "model": "gpt-5.6-luna",
+      "n": 1,
+      "successes": 0,
+      "rawSuccesses": 0,
+      "validSelectionRuns": null,
+      "meanScore": 0.8,
+      "rawMeanScore": 0.8,
+      "stageScores": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "medianSeconds": 214.568,
+      "minSeconds": 214.568,
+      "maxSeconds": 214.568,
+      "medianTokens": 190624,
+      "medianInput": 41502,
+      "medianOutput": 8322,
+      "medianCached": 140800,
+      "medianReasoning": 3075,
+      "medianCacheWrite": 0,
+      "jevRequests": 0,
+      "jevInputTokens": null,
+      "jevOutputTokens": null,
+      "fallbacks": 0,
+      "fallbackReasons": {}
+    },
+    {
+      "workflow": "payments",
+      "arm": "luna-sieve",
+      "model": "gpt-5.6-luna",
+      "n": 1,
+      "successes": 1,
+      "rawSuccesses": 0,
+      "validSelectionRuns": 0,
+      "meanScore": 1,
+      "rawMeanScore": 0.9875,
+      "stageScores": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "medianSeconds": 333.53,
+      "minSeconds": 333.53,
+      "maxSeconds": 333.53,
+      "medianTokens": 498612,
+      "medianInput": 161775,
+      "medianOutput": 12741,
+      "medianCached": 324096,
+      "medianReasoning": 5409,
+      "medianCacheWrite": 0,
+      "jevRequests": 5,
+      "jevInputTokens": 5184,
+      "jevOutputTokens": 731,
+      "fallbacks": 4,
+      "fallbackReasons": {
+        "timeout": 4
+      }
+    }
+  ],
+  "reviewedChecks": 4,
+  "pairedSpeedups": {
+    "native": {
+      "n": 0,
+      "ratio": null
+    },
+    "full": {
+      "n": 0,
+      "ratio": null
+    },
+    "luna": {
+      "n": 0,
+      "ratio": null
+    },
+    "lunaVsAstra": {
+      "n": 0,
+      "ratio": null
+    }
+  },
+  "totals": {
+    "seconds": 1666.0349999999999,
+    "usage": {
+      "input": 877990,
+      "output": 46285,
+      "cacheRead": 899456,
+      "cacheWrite": 0,
+      "reasoning": 8775,
+      "totalTokens": 1823731
+    },
+    "jevRequests": 10,
+    "actualCostUsd": null
+  },
+  "projection": {
+    "formalRuns": 60,
+    "multiplier": 12,
+    "seconds": 19992.42,
+    "totalTokens": 21884772,
+    "note": "Linear estimate from one payment attempt per arm. Early failures shorten the pilot; other workflows and service conditions may differ."
+  }
+}

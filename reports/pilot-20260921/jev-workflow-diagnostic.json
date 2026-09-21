@@ -1,0 +1,77 @@
+{
+  "purpose": "Post-pilot diagnostic only. The pinned plugin selection function receives the actual five payment prompts and original candidate catalog. Only timeoutMs changes from 1500 to 10000; no retries. No main-model calls or workflow scores.",
+  "model": "jev-1.13.0",
+  "timeoutMs": 10000,
+  "results": [
+    {
+      "stage": 1,
+      "startedAt": "2026-09-21T07:41:50.110Z",
+      "questions": 41,
+      "requestBytes": 18296,
+      "httpStatus": 200,
+      "headersMs": 1358,
+      "elapsedMs": 1361,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 6,
+      "inputTokens": 5121
+    },
+    {
+      "stage": 2,
+      "startedAt": "2026-09-21T07:41:51.495Z",
+      "questions": 41,
+      "requestBytes": 18525,
+      "httpStatus": 200,
+      "headersMs": 1330,
+      "elapsedMs": 1332,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 4,
+      "inputTokens": 5168
+    },
+    {
+      "stage": 3,
+      "startedAt": "2026-09-21T07:41:52.828Z",
+      "questions": 41,
+      "requestBytes": 18776,
+      "httpStatus": 200,
+      "headersMs": 472,
+      "elapsedMs": 474,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 5,
+      "inputTokens": 5214
+    },
+    {
+      "stage": 4,
+      "startedAt": "2026-09-21T07:41:53.302Z",
+      "questions": 41,
+      "requestBytes": 18615,
+      "httpStatus": 200,
+      "headersMs": 446,
+      "elapsedMs": 448,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 6,
+      "inputTokens": 5170
+    },
+    {
+      "stage": 5,
+      "startedAt": "2026-09-21T07:41:53.751Z",
+      "questions": 41,
+      "requestBytes": 18700,
+      "httpStatus": 200,
+      "headersMs": 464,
+      "elapsedMs": 468,
+      "reason": "none",
+      "evaluated": 40,
+      "selected": 6,
+      "hidden": 5,
+      "inputTokens": 5184
+    }
+  ]
+}
