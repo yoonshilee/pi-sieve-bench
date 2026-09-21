@@ -1,0 +1,50 @@
+{
+  "id": "explicit-test-3-pi-jev-score",
+  "caseId": "explicit-test",
+  "category": "routine",
+  "arm": "delegated",
+  "repeat": 3,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "tests",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 27432,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    10264,
+    20730
+  ],
+  "scoreArgumentChars": 5480,
+  "executionArgumentChars": 35,
+  "usage": {
+    "input": 5971,
+    "output": 1058,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 7029
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 1843,
+    "dispatchMs": 3661,
+    "inputTokens": 1433,
+    "outputTokens": 116
+  },
+  "failure": null,
+  "piJev": {
+    "wireRequests": 1,
+    "blockedRetries": 0,
+    "requestMatched": true,
+    "modelMatched": true,
+    "responseValid": true,
+    "inputTokens": 1433,
+    "outputTokens": 116,
+    "reason": "none"
+  },
+  "variant": "score"
+}

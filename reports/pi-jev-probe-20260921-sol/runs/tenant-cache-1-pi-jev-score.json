@@ -1,0 +1,50 @@
+{
+  "id": "tenant-cache-1-pi-jev-score",
+  "caseId": "tenant-cache",
+  "category": "evidence",
+  "arm": "delegated",
+  "repeat": 1,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "cache_partition",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 29860,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    10604,
+    23057
+  ],
+  "scoreArgumentChars": 5821,
+  "executionArgumentChars": 93,
+  "usage": {
+    "input": 6190,
+    "output": 1162,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 28,
+    "totalTokens": 7352
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 1333,
+    "dispatchMs": 4118,
+    "inputTokens": 1498,
+    "outputTokens": 116
+  },
+  "failure": null,
+  "piJev": {
+    "wireRequests": 1,
+    "blockedRetries": 0,
+    "requestMatched": true,
+    "modelMatched": true,
+    "responseValid": true,
+    "inputTokens": 1498,
+    "outputTokens": 116,
+    "reason": "none"
+  },
+  "variant": "score"
+}

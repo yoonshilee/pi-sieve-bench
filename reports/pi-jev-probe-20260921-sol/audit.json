@@ -1,0 +1,45 @@
+{
+  "verifiedAt": "2026-09-21T15:39:51.189Z",
+  "sourceHash": "7561b72c616f095d280a878591840f833b3feb5450835fc90f4a93824976a9bd",
+  "baselineDataHash": "a618afb5e4ac274d77c1d87de51539da474b4a84595e2e7874edbce3fc16d7a9",
+  "currentTrials": 36,
+  "uniqueScheduledTrials": 36,
+  "completedCorrectValid": 36,
+  "realJevRequests": 36,
+  "successfulJevResponses": 36,
+  "blockedRetries": 0,
+  "mainRequests": 72,
+  "tokenAccountingConsistent": true,
+  "individualFilesMatchJsonl": true,
+  "offlineReportDeterministic": true,
+  "reportDigest": "6a1e59ad397332bf0cf1518a94d38c87fd507cc05c72db4a964294673227e561",
+  "initialDecisionAndOrchestrationRemainder": [
+    {
+      "variant": "direct",
+      "n": 18,
+      "remainingMedianMs": 3618.5,
+      "totalSelectionMs": 73127
+    },
+    {
+      "variant": "sieve-score",
+      "n": 18,
+      "remainingMedianMs": 4479,
+      "totalSelectionMs": 194761
+    },
+    {
+      "variant": "pi-jev-score",
+      "n": 18,
+      "remainingMedianMs": 22129,
+      "totalSelectionMs": 511833
+    },
+    {
+      "variant": "pi-jev-choice",
+      "n": 18,
+      "remainingMedianMs": 8043.5,
+      "totalSelectionMs": 260034
+    }
+  ],
+  "pairedNativeScoreOverChoiceMedian": 1.991487977975167,
+  "note": "The remainder is computed per trial before taking a median. It includes the first main-model request and any unseparated orchestration; it is not a direct measurement of reasoning or generation time.",
+  "completedBatchResumePreservedData": true
+}

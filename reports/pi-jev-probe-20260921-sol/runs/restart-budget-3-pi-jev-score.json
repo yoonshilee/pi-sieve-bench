@@ -1,0 +1,50 @@
+{
+  "id": "restart-budget-3-pi-jev-score",
+  "caseId": "restart-budget",
+  "category": "evidence",
+  "arm": "delegated",
+  "repeat": 3,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "retry_restart",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 30233,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    10629,
+    23103
+  ],
+  "scoreArgumentChars": 5844,
+  "executionArgumentChars": 98,
+  "usage": {
+    "input": 4392,
+    "output": 1166,
+    "cacheRead": 1792,
+    "cacheWrite": 0,
+    "reasoning": 31,
+    "totalTokens": 7350
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 2116,
+    "dispatchMs": 3266,
+    "inputTokens": 1496,
+    "outputTokens": 116
+  },
+  "failure": null,
+  "piJev": {
+    "wireRequests": 1,
+    "blockedRetries": 0,
+    "requestMatched": true,
+    "modelMatched": true,
+    "responseValid": true,
+    "inputTokens": 1496,
+    "outputTokens": 116,
+    "reason": "none"
+  },
+  "variant": "score"
+}

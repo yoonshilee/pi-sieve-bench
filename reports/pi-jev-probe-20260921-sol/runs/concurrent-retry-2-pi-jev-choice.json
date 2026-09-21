@@ -1,0 +1,50 @@
+{
+  "id": "concurrent-retry-2-pi-jev-choice",
+  "caseId": "concurrent-retry",
+  "category": "evidence",
+  "arm": "delegated",
+  "repeat": 2,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "retry_overlap",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 16593,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    5853,
+    8237
+  ],
+  "scoreArgumentChars": 1541,
+  "executionArgumentChars": 88,
+  "usage": {
+    "input": 1742,
+    "output": 353,
+    "cacheRead": 1024,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 3119
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 1274,
+    "dispatchMs": 2858,
+    "inputTokens": 634,
+    "outputTokens": 82
+  },
+  "failure": null,
+  "piJev": {
+    "wireRequests": 1,
+    "blockedRetries": 0,
+    "requestMatched": true,
+    "modelMatched": true,
+    "responseValid": true,
+    "inputTokens": 634,
+    "outputTokens": 82,
+    "reason": "none"
+  },
+  "variant": "choice"
+}

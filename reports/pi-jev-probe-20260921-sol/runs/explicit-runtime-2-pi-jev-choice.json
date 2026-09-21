@@ -1,0 +1,50 @@
+{
+  "id": "explicit-runtime-2-pi-jev-choice",
+  "caseId": "explicit-runtime",
+  "category": "routine",
+  "arm": "delegated",
+  "repeat": 2,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "runtime",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 13426,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    5516,
+    7539
+  ],
+  "scoreArgumentChars": 1204,
+  "executionArgumentChars": 43,
+  "usage": {
+    "input": 2583,
+    "output": 285,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 2868
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 2117,
+    "dispatchMs": 3797,
+    "inputTokens": 575,
+    "outputTokens": 81
+  },
+  "failure": null,
+  "piJev": {
+    "wireRequests": 1,
+    "blockedRetries": 0,
+    "requestMatched": true,
+    "modelMatched": true,
+    "responseValid": true,
+    "inputTokens": 575,
+    "outputTokens": 81,
+    "reason": "none"
+  },
+  "variant": "choice"
+}

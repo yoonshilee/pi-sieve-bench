@@ -1,0 +1,50 @@
+{
+  "id": "month-boundary-1-pi-jev-score",
+  "caseId": "month-boundary",
+  "category": "evidence",
+  "arm": "delegated",
+  "repeat": 1,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "date_boundary",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 26847,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    10618,
+    21452
+  ],
+  "scoreArgumentChars": 5833,
+  "executionArgumentChars": 87,
+  "usage": {
+    "input": 4363,
+    "output": 1128,
+    "cacheRead": 1792,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 7283
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 1423,
+    "dispatchMs": 3175,
+    "inputTokens": 1498,
+    "outputTokens": 116
+  },
+  "failure": null,
+  "piJev": {
+    "wireRequests": 1,
+    "blockedRetries": 0,
+    "requestMatched": true,
+    "modelMatched": true,
+    "responseValid": true,
+    "inputTokens": 1498,
+    "outputTokens": 116,
+    "reason": "none"
+  },
+  "variant": "score"
+}

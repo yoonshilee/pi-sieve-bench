@@ -1,0 +1,210 @@
+{
+  "experiment": "pi-jev-native-decision-probe",
+  "sourceHash": "7561b72c616f095d280a878591840f833b3feb5450835fc90f4a93824976a9bd",
+  "harnessCommit": "383876a4e82577e49339043744f26e1946160e96",
+  "createdAt": "2026-09-21T15:25:56.633Z",
+  "piJevCommit": "549c2bfa249269d0f5590658b5743801c47af369",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "piJev": "0.5.0",
+    "typesafeSdk": "0.6.0"
+  },
+  "baselineBatch": "profile-probe-20260921-sol-v05",
+  "baselineDataHash": "a618afb5e4ac274d77c1d87de51539da474b4a84595e2e7874edbce3fc16d7a9",
+  "limits": {
+    "trialMs": 90000,
+    "mainRequests": 4,
+    "jevTimeoutMs": 10000,
+    "outboundJevRequests": 1
+  },
+  "schedule": [
+    {
+      "caseId": "explicit-test",
+      "repeat": 1,
+      "variant": "score"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 1,
+      "variant": "choice"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 1,
+      "variant": "choice"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 1,
+      "variant": "score"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 1,
+      "variant": "score"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 1,
+      "variant": "choice"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 1,
+      "variant": "choice"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 1,
+      "variant": "score"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 1,
+      "variant": "score"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 1,
+      "variant": "choice"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 1,
+      "variant": "choice"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 1,
+      "variant": "score"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 2,
+      "variant": "choice"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 2,
+      "variant": "score"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 2,
+      "variant": "score"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 2,
+      "variant": "choice"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 2,
+      "variant": "choice"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 2,
+      "variant": "score"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 2,
+      "variant": "score"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 2,
+      "variant": "choice"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 2,
+      "variant": "choice"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 2,
+      "variant": "score"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 2,
+      "variant": "score"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 2,
+      "variant": "choice"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 3,
+      "variant": "score"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 3,
+      "variant": "choice"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 3,
+      "variant": "choice"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 3,
+      "variant": "score"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 3,
+      "variant": "score"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 3,
+      "variant": "choice"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 3,
+      "variant": "choice"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 3,
+      "variant": "score"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 3,
+      "variant": "score"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 3,
+      "variant": "choice"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 3,
+      "variant": "choice"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 3,
+      "variant": "score"
+    }
+  ],
+  "method": "Same frozen six cases, eight candidates, rubric, medium reasoning, and action sink as the historical probe. Native pinned pi-jev extension; only jev_evaluate and the sink are exposed. Auto routing, guards, agents, and compaction disabled. Score uses eight ordered questions; Choice uses one question with all options. Supplied arguments must be copied exactly. Main model dispatches the selected candidate without semantic reranking. No shell execution.",
+  "instrumentation": "Pi native credentials passed through an ephemeral environment key; official API root forced and SDK logging disabled. Observer validates exact outbound arguments and response, records whitelisted usage, blocks additional outbound attempts, and applies the same 10-second deadline. Native SDK may internally back off on an error; blocked retries are recorded. No changes to pi-jev source.",
+  "timing": "First prompt through action-sink entry, including argument generation, Jev, and main-model handoff. Initialization and final acknowledgement excluded. Native Jev elapsed includes response parsing; observer clones response for validation and usage. Cases and repeats alternate modes, serially, fresh sessions. Historical controls are not contemporaneous; caches cannot be reset.",
+  "publication": "Local only. No charts, remote push, or release performance claims."
+}
