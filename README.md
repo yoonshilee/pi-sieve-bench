@@ -115,6 +115,11 @@ here for methods, results, and limitations. Figures and sanitized data are publi
 in this repository. Pilot observations remain separate from any future confirmed
 formal batch and do not establish general performance gains.
 
+Charts use Matplotlib's sketch styling and the bundled
+[Caveat font](https://github.com/google/fonts/tree/5571d84c0d8c70ec1af4f64072d8c5cf1e4e9643/ofl/caveat),
+distributed under the [SIL Open Font License](assets/fonts/OFL.txt). Rendering is
+offline; the hand-drawn styling does not change the plotted measurements.
+
 ## Privacy and repository checks
 
 The SDK reads native credentials in the controller. Agent shell processes receive
