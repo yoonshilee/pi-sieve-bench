@@ -1,12 +1,28 @@
 import type { WorkflowId } from "./fixtures.ts";
 import type { Check } from "./grade.ts";
 export const ARMS = ["native", "full", "sieve", "luna-native", "luna-sieve"] as const;
-export type Arm = typeof ARMS[number];
+export const RETRIEVAL_ARMS = ["retrieval-local", "retrieval-jev"] as const;
+export const RETRIEVAL_COMMIT = "ba996c7bfceddbee6fa75e03a8f4a323052e8d3c";
+export type Arm = typeof ARMS[number] | typeof RETRIEVAL_ARMS[number];
+export const RETRIEVAL_QUERIES = [
+    "duplicate payment charges after timeout and retry active idempotency contract",
+    "sequential payment retries request validation gateway failure retry eligibility",
+    "concurrent payment requests in-flight sharing conflicts independent keys failed reservations",
+    "callback event validation duplicate delivery distinct events receipt uniqueness",
+    "payment regression idempotency validation failures concurrency callback events receipts",
+] as const;
+export const REQUIRED_REFERENCES = [
+    ["payment-idempotency"],
+    ["payment-idempotency", "payment-validation", "gateway-failures"],
+    ["payment-idempotency", "payment-concurrency", "gateway-failures"],
+    ["webhook-events", "webhook-receipts"],
+    ["payment-idempotency", "payment-validation", "gateway-failures", "payment-concurrency", "webhook-events", "webhook-receipts"],
+] as const;
 export const VERSIONS = { pi: "0.86.1", provider: "openai-codex", model: "gpt-6-astra", thinking: "medium", jev: "jev-1.13.0", sieve: "7d54c8f2865d81113688e40b79abcef2956f6a32" } as const;
 export function armConfig(arm: Arm): {
     model: string;
     mode: "native" | "full" | "sieve";
-} { return { model: arm.startsWith("luna-") ? "gpt-5.6-luna" : VERSIONS.model, mode: arm.endsWith("sieve") ? "sieve" : arm === "full" ? "full" : "native" }; }
+} { return { model: arm.startsWith("luna-") ? "gpt-5.6-luna" : VERSIONS.model, mode: (arm.endsWith("sieve") || arm.startsWith("retrieval-")) ? "sieve" : arm === "full" ? "full" : "native" }; }
 export const LIMITS = { stageMs: 300000, modelRequests: 30 } as const;
 export type Usage = {
     input: number | null;
@@ -41,6 +57,7 @@ export type Stage = {
         outputTokens: number | null;
         responses?: { httpStatus: number | null; headersMs: number; errorKind: "aborted" | "network_error" | null }[];
     };
+    retrievals?: { queryMatched: boolean; reason: string; elapsedMs: number | null; selected: number | null; resultChars: number; names: string[] }[];
     sieve: Record<string, string | number | boolean> | null;
     answer: string;
 };
@@ -57,8 +74,9 @@ export type Run = {
     initialHash: string;
     fixtureHash: string;
     harnessCommit: string;
-    versions: Omit<typeof VERSIONS, "model"> & {
+    versions: Omit<typeof VERSIONS, "model" | "sieve"> & {
         model: string;
+        sieve: string;
     };
     node: string;
     initMs: number;

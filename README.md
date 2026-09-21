@@ -126,28 +126,35 @@ Rendering is offline. Heatmap cells use pale green for all checks passed, amber
 for partial passes, and pink for zero or unrun stages. Styling does not change
 any measurements.
 
-## Next experiment: on-demand retrieval
+## On-demand retrieval comparison
 
-Pi Sieve v0.2 moves Jev selection into `sieve_search`. It leaves existing messages,
-skills, and tool definitions intact. The current runner intentionally remains
-pinned to v0.1 so these experiments stay reproducible. Its five historical arms
-must not be relabeled as a v0.2 experiment.
+The historical runner and five arms remain pinned to v0.1. A separate comparison
+loads v0.2 at `ba996c7` under both conditions: `retrieval-local` uses `/sieve off`,
+and `retrieval-jev` uses `/sieve on`. Both retain the same tool definition, initial
+files, six skills, six extension tools, and 28 references. The main model is
+`openai-codex/gpt-6-astra` with medium reasoning.
 
-No live v0.2 benchmark has run. The plugin's offline tests use the real Pi SDK
-with scripted model responses to verify zero Jev calls without retrieval, one
-batch per search, local fallback, cancellation, and unchanged message prefixes.
-Mocked responses establish neither Jev relevance nor server cache hits.
+```sh
+npm run compare -- retrieval-001
+npm run report -- retrieval-001
+```
 
-A future separately frozen experiment should compare the same `sieve_search`
-tool and catalog with Jev enabled versus local-only matching, separately for each
-main model. Keep queries identical for retrieval-quality checks; also measure
-complete tasks where the model chooses whether to retrieve. Record necessary-item
-recall, independent task success, main-model requests, uncached/cached input,
-output, Jev input/output, fallback rate, and total elapsed time. Preserve missing
-usage as null. Fewer total tokens alone do not establish lower cost. A speed or
-cost claim requires the saved main-model work to exceed the extra Jev overhead
-without sacrificing correctness. Actual prices or invoices are needed for money
-comparisons; subscription tokens are not charges.
+This command makes **two live five-stage payments runs**, local first and Jev
+second. Each stage explicitly requests a frozen query before the original task;
+additional reads remain available. This measures a controlled retrieval workflow,
+not whether the model spontaneously chooses the tool. It uses the shared 10-second
+benchmark timeout, not the 1.5-second production default. It does not launch a
+formal batch or retry failed workflows. Existing run records are preserved.
+
+The manifest freezes queries and necessary-reference names before execution.
+Search results record reason codes, counts, duration, names, and character volume;
+no reference body or raw request is saved. Query equality is recorded as a boolean.
+First-search recall is measured against stage-specific necessary references and
+is separate from independent task correctness. Reports include main requests,
+uncached/cached input, output, Jev usage, and complete workflow time. A successful
+speed pair requires both tasks to pass and every stage to retrieve successfully.
+Provider caches and execution order remain uncontrolled. One pair cannot establish
+statistical significance; tokens are not actual monetary charges.
 
 ## Privacy and repository checks
 

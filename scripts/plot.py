@@ -39,8 +39,8 @@ def main():
     rows = [json.loads(line) for line in (directory / "runs.jsonl").read_text().splitlines() if line]
     summary = json.loads((directory / "summary.json").read_text())
     groups = summary["groups"]
-    colors = {"native": "#526987", "full": "#c08b3c", "sieve": "#147d77", "luna-native": "#986aa0", "luna-sieve": "#c56b65"}
-    arm_names = {"native": "Astra / Native Pi", "full": "Astra / Full Context", "sieve": "Astra / Sieve", "luna-native": "Luna / Native Pi", "luna-sieve": "Luna / Sieve"}
+    colors = {"retrieval-local": "#526987", "retrieval-jev": "#147d77", "native": "#526987", "full": "#c08b3c", "sieve": "#147d77", "luna-native": "#986aa0", "luna-sieve": "#c56b65"}
+    arm_names = {"retrieval-local": "Astra / Local retrieval", "retrieval-jev": "Astra / Jev retrieval", "native": "Astra / Native Pi", "full": "Astra / Full Context", "sieve": "Astra / Sieve", "luna-native": "Luna / Native Pi", "luna-sieve": "Luna / Sieve"}
     workflows = list(dict.fromkeys(g["workflow"] for g in groups))
     labels = [arm_names[g["arm"]].replace(" / ", "\n") + (f"\n{g['workflow']}" if len(workflows) > 1 else "") for g in groups]
     row_labels = [arm_names[g["arm"]] + (f" / {g['workflow']}" if len(workflows) > 1 else "") for g in groups]
@@ -98,7 +98,8 @@ def main():
     fig.tight_layout(rect=(0, 0.085, 1, 0.91), h_pad=3)
     fallbacks = sum(group["fallbacks"] for group in groups)
     calls = sum(group["jevRequests"] for group in groups)
-    fig.text(0.02, 0.01, "gpt-6-astra + gpt-5.6-luna / medium · Pi 0.86.1 · Jev 1.13.0\n"
+    models = " + ".join(dict.fromkeys(row["versions"]["model"] for row in rows))
+    fig.text(0.02, 0.01, models + " / medium · Pi 0.86.1 · Jev 1.13.0\n"
              "Synthetic projects; no general performance claim. Missing stages score zero; missing token usage is omitted.\n"
              f"Jev fallbacks: {fallbacks}/{calls} calls · Corrected grading verdicts: {summary['reviewedChecks']} · Tokens are not monetary costs.", fontsize=9, color=ink)
     for suffix in ["png", "svg"]:

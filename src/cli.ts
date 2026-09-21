@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import { schedule, armConfig, VERSIONS, LIMITS } from "./metrics.ts";
 import { atomicJson, preserveExistingRun, runWorkflow } from "./runner.ts";
 import { report } from "./report.ts";
+import { compareRetrieval } from "./retrieval.ts";
 import { SIEVE_CONFIG } from "./fixtures.ts";
 export async function sourceHash(): Promise<string> { const hash = createHash("sha256"); for (const path of ["package-lock.json", ...(await readdir("src")).filter(x => x.endsWith(".ts")).sort().map(x => `src/${x}`)])
     hash.update(path + "\0").update(await readFile(path)); return hash.digest("hex"); }
@@ -27,8 +28,15 @@ async function main(): Promise<void> {
         console.log(`Report generated: reports/${batch}/README.md`);
         return;
     }
+    if (command === "compare") {
+        if (process.platform !== "darwin") throw new Error("Live runs currently require macOS sandbox-exec.");
+        const batch = args[0];
+        if (!batch || !/^[a-z0-9][a-z0-9-]*$/.test(batch)) throw new Error("Provide a batch identifier.");
+        await compareRetrieval(batch, await sourceHash(), execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim());
+        return;
+    }
     if (command !== "pilot" && command !== "run")
-        throw new Error("Use pilot, run, or report.");
+        throw new Error("Use compare, pilot, run, or report.");
     const kind = command === "pilot" ? "pilot" : "formal";
     if (kind === "formal" && !args.includes("--confirmed"))
         throw new Error("Formal execution requires user confirmation after the pilot. Pass --confirmed only after receiving it.");

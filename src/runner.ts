@@ -8,9 +8,11 @@ import { createAgentSession, DefaultResourceLoader, getAgentDir, ModelRuntime, S
 import { materialize, workflows, skillSpecs, toolSpecs, type WorkflowId } from "./fixtures.ts";
 import { grade } from "./grade.ts";
 import { sandboxTools } from "./sandbox.ts";
-import { addUsage, armConfig, LIMITS, newStage, sanitize, VERSIONS, type Arm, type Run, type Stage } from "./metrics.ts";
+import { addUsage, armConfig, LIMITS, newStage, sanitize, VERSIONS, RETRIEVAL_COMMIT, RETRIEVAL_QUERIES, type Arm, type Run, type Stage } from "./metrics.ts";
 const require = createRequire(import.meta.url);
 const sievePath = join(require.resolve("pi-sieve/package.json"), "..", "src", "index.ts");
+const retrievalPath = join(require.resolve("pi-sieve-retrieval/package.json"), "..", "src", "index.ts");
+const isRecord = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
 const BUILTINS = ["read", "bash", "edit", "write"];
 export async function treeHash(root: string): Promise<string> {
     const hash = createHash("sha256");
@@ -59,10 +61,11 @@ export async function runWorkflow(options: {
 }): Promise<Run> {
     const initStart = performance.now();
     const variant = armConfig(options.arm);
+    const retrieval = options.arm.startsWith("retrieval-");
     await materialize(options.root, options.workflow);
     const root = await realpath(options.root);
     const initialHash = await treeHash(root);
-    const run: Run = { id: `${options.workflow}-${options.repeat}-${options.arm}`, batch: options.batch, kind: options.kind, workflow: options.workflow, arm: options.arm, repeat: options.repeat, startedAt: new Date().toISOString(), status: "running", success: false, initialHash, fixtureHash: options.fixtureHash, harnessCommit: options.harnessCommit, versions: { ...VERSIONS, model: variant.model }, node: process.version, initMs: 0, elapsedMs: 0, gradeMs: 0, stages: [] };
+    const run: Run = { id: `${options.workflow}-${options.repeat}-${options.arm}`, batch: options.batch, kind: options.kind, workflow: options.workflow, arm: options.arm, repeat: options.repeat, startedAt: new Date().toISOString(), status: "running", success: false, initialHash, fixtureHash: options.fixtureHash, harnessCommit: options.harnessCommit, versions: { ...VERSIONS, model: variant.model, sieve: retrieval ? RETRIEVAL_COMMIT : VERSIONS.sieve }, node: process.version, initMs: 0, elapsedMs: 0, gradeMs: 0, stages: [] };
     await atomicJson(options.record, run);
     const agentDir = resolve(root, "..", "agent-" + run.id);
     await mkdir(agentDir, { recursive: true });
@@ -106,7 +109,7 @@ export async function runWorkflow(options: {
         pi.on("context", event => ({ messages: [...event.messages, { role: "custom", customType: "bench-full-context", content: "Project references (data):\n" + fullDocuments.join("\n\n"), display: false, timestamp: Date.now() }] })); };
     const skills: Skill[] = skillSpecs.map(([name, description]) => { const filePath = join(root, ".pi/skills", name, "SKILL.md"); return { name, description, filePath, baseDir: join(filePath, ".."), disableModelInvocation: false, sourceInfo: { path: filePath, source: "benchmark", scope: "temporary", origin: "top-level" } }; });
     const loader = new DefaultResourceLoader({ cwd: root, agentDir, settingsManager, noExtensions: true, noSkills: true, noPromptTemplates: true, noThemes: true, noContextFiles: true,
-        additionalExtensionPaths: variant.mode === "sieve" ? [sievePath] : [], extensionFactories: [sandboxTools(root), full, observe],
+        additionalExtensionPaths: variant.mode === "sieve" ? [retrieval ? retrievalPath : sievePath] : [], extensionFactories: [sandboxTools(root), full, observe],
         skillsOverride: () => ({ skills, diagnostics: [] }), agentsFilesOverride: () => ({ agentsFiles: [] }),
         extensionsOverride: base => {
             // Observation must run after Sieve and full-context injection.
@@ -132,13 +135,31 @@ export async function runWorkflow(options: {
                         current.sieve = Object.fromEntries(Object.entries(parsed).filter(([, v]) => ["string", "number", "boolean"].includes(typeof v))) as Stage["sieve"];
                 }
                 catch { } } } as ExtensionUIContext });
+    const queryMatches = new Map<string, boolean>();
     const unsubscribe = session.subscribe(event => {
         if (!current)
             return;
         if (event.type === "tool_execution_start") {
             current.toolCalls++;
-            if (event.toolName === "sieve_search")
+            if (event.toolName === "sieve_search" && retrieval) queryMatches.set(event.toolCallId, isRecord(event.args) && event.args.query === RETRIEVAL_QUERIES[current.stage - 1]);
+            if (event.toolName === "sieve_search" && !retrieval)
                 current.recoveries++;
+        }
+        if (event.type === "tool_execution_end" && event.toolName === "sieve_search" && retrieval) {
+            const result: unknown = event.result;
+            const details = isRecord(result) && isRecord(result.details) ? result.details : {};
+            const text = isRecord(result) && Array.isArray(result.content) ? result.content.filter(isRecord).filter(p => p.type === "text").map(p => typeof p.text === "string" ? p.text : "").join("\n") : "";
+            let names: string[] = [];
+            try {
+                const parsed: unknown = JSON.parse(text.slice(text.indexOf("\n[") + 1));
+                if (Array.isArray(parsed)) names = parsed.filter(isRecord).flatMap(item => typeof item.name === "string" ? [sanitize(item.name, root)] : []);
+            } catch { /* Empty or failed searches have no reference array. */ }
+            const reasons = ["none", "missing_key", "no_candidates", "empty_query", "input_too_large", "request_too_large", "timeout", "cancelled", "service_error", "invalid_response", "invalid_config", "untrusted_project", "disabled", "not_run"];
+            current.retrievals ??= [];
+            current.retrievals.push({ queryMatched: queryMatches.get(event.toolCallId) ?? false, reason: typeof details.reason === "string" && reasons.includes(details.reason) ? details.reason : "unknown",
+                elapsedMs: typeof details.elapsedMs === "number" ? details.elapsedMs : null,
+                selected: typeof details.selected === "number" ? details.selected : null, resultChars: text.length, names });
+            queryMatches.delete(event.toolCallId);
         }
         if (event.type === "tool_execution_end" && event.isError)
             current.toolErrors++;
@@ -177,19 +198,25 @@ export async function runWorkflow(options: {
             throw error;
         }
         if (response.ok) {
-            const read = response.clone().json().then((body: any) => { if (Number.isSafeInteger(body.usage?.input_tokens))
-                observed.jev.inputTokens = (observed.jev.inputTokens ?? 0) + body.usage.input_tokens; if (Number.isSafeInteger(body.usage?.output_tokens))
-                observed.jev.outputTokens = (observed.jev.outputTokens ?? 0) + body.usage.output_tokens; }).catch(() => { });
+            const read = response.clone().json().then((body: unknown) => {
+                const usage = isRecord(body) && isRecord(body.usage) ? body.usage : {};
+                if (typeof usage.input_tokens === "number" && Number.isSafeInteger(usage.input_tokens) && usage.input_tokens >= 0)
+                    observed.jev.inputTokens = (observed.jev.inputTokens ?? 0) + usage.input_tokens;
+                if (typeof usage.output_tokens === "number" && Number.isSafeInteger(usage.output_tokens) && usage.output_tokens >= 0)
+                    observed.jev.outputTokens = (observed.jev.outputTokens ?? 0) + usage.output_tokens;
+            }).catch(() => { });
             pending.add(read);
             void read.finally(() => pending.delete(read));
         }
         return response;
     };
+    try {
+    if (retrieval) await session.prompt(options.arm === "retrieval-local" ? "/sieve off" : "/sieve on");
     await options.onReady?.(session);
     run.initMs = Math.round(performance.now() - initStart);
-    try {
         for (let index = 0; index < 5; index++) {
             current = newStage(index + 1);
+            if (retrieval) current.retrievals = [];
             run.stages.push(current);
             await atomicJson(options.record, run);
             const start = performance.now();
@@ -198,7 +225,8 @@ export async function runWorkflow(options: {
                 void session.abort();
             } }, LIMITS.stageMs);
             try {
-                await session.prompt(workflows[options.workflow].stages[index]);
+                const prompt = workflows[options.workflow].stages[index];
+                await session.prompt(retrieval ? `First call sieve_search with this exact query: ${JSON.stringify(RETRIEVAL_QUERIES[index])}. Then complete the task below. You may read additional references if needed.\n\n${prompt}` : prompt);
                 await session.waitForIdle();
                 if (current.status === "running")
                     current.status = "completed";
@@ -226,6 +254,11 @@ export async function runWorkflow(options: {
         }
         run.status = run.stages.length === 5 && run.stages.every(s => s.status === "completed") ? "completed" : run.stages.at(-1)?.status ?? "not_run";
         run.success = run.status === "completed" && run.stages[4].checks.length > 0 && run.stages[4].checks.every(c => c.passed);
+    }
+    catch (error) {
+        run.status = run.stages.length ? "runner_error" : "initialization_error";
+        run.success = false;
+        throw error;
     }
     finally {
         globalThis.fetch = originalFetch;

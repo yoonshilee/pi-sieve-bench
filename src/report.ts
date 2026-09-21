@@ -2,6 +2,7 @@ import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { ARMS, armConfig, emptyUsage, addUsage, median, pairedSpeedup, score, stageScore, stageChecks, isSuccessful, hasValidSelection, type Run } from "./metrics.ts";
+import { reportRetrieval } from "./retrieval.ts";
 export async function loadRuns(directory: string): Promise<Run[]> {
     const files = (await readdir(join(directory, "runs"))).filter(x => x.endsWith(".json")).sort();
     return await Promise.all(files.map(async file => JSON.parse(await readFile(join(directory, "runs", file), "utf8")) as Run));
@@ -54,7 +55,9 @@ export function summarize(rows: Run[]) {
 }
 const format = (value: number | null, digits = 0) => value === null ? "N/A" : value.toFixed(digits);
 export async function report(directory: string, plots = true): Promise<void> {
-    const rows = await loadRuns(directory), summary = summarize(rows);
+    const rows = await loadRuns(directory);
+    if (rows.length && rows.every(r => r.arm.startsWith("retrieval-"))) return reportRetrieval(directory, rows, plots);
+    const summary = summarize(rows);
     await mkdir(directory, { recursive: true });
     await writeFile(join(directory, "runs.jsonl"), rows.map(r => JSON.stringify({ ...r, reviewedSuccess: isSuccessful(r) })).join("\n") + "\n");
     await writeFile(join(directory, "summary.json"), JSON.stringify(summary, null, 2) + "\n");
