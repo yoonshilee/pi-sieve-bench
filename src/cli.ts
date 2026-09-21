@@ -1,0 +1,79 @@
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, readdir, stat } from "node:fs/promises";
+import { join, resolve } from "node:path";
+import { schedule, armConfig, VERSIONS, LIMITS, type Run } from "./metrics.ts";
+import { atomicJson, runWorkflow } from "./runner.ts";
+import { report } from "./report.ts";
+export async function sourceHash(): Promise<string> { const hash = createHash("sha256"); for (const path of ["package-lock.json", ...(await readdir("src")).filter(x => x.endsWith(".ts")).sort().map(x => `src/${x}`)])
+    hash.update(path + "\0").update(await readFile(path)); return hash.digest("hex"); }
+async function exists(path: string) { try {
+    await stat(path);
+    return true;
+}
+catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT")
+        return false;
+    throw error;
+} }
+async function main(): Promise<void> {
+    const [command, ...args] = process.argv.slice(2);
+    if (command === "report") {
+        const batch = args[0];
+        if (!batch || !/^[a-z0-9][a-z0-9-]*$/.test(batch))
+            throw new Error("Provide a batch identifier.");
+        await report(join("reports", batch));
+        console.log(`Report generated: reports/${batch}/README.md`);
+        return;
+    }
+    if (command !== "pilot" && command !== "run")
+        throw new Error("Use pilot, run, or report.");
+    const kind = command === "pilot" ? "pilot" : "formal";
+    if (kind === "formal" && !args.includes("--confirmed"))
+        throw new Error("Formal execution requires user confirmation after the pilot. Pass --confirmed only after receiving it.");
+    if (process.platform !== "darwin")
+        throw new Error("Live runs currently require macOS sandbox-exec.");
+    const index = args.indexOf("--batch");
+    const batch = index < 0 ? `${kind}-${new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14)}` : args[index + 1];
+    if (!batch || !/^[a-z0-9][a-z0-9-]*$/.test(batch))
+        throw new Error("Invalid batch identifier.");
+    const output = join("reports", batch), fingerprint = await sourceHash();
+    const commit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+    const manifestPath = join(output, "manifest.json");
+    if (await exists(manifestPath)) {
+        const prior = JSON.parse(await readFile(manifestPath, "utf8"));
+        if (prior.sourceHash !== fingerprint || prior.kind !== kind)
+            throw new Error("Cannot resume a batch with changed experiment code.");
+    }
+    else
+        await atomicJson(manifestPath, { batch, kind, createdAt: new Date().toISOString(), sourceHash: fingerprint, harnessCommit: commit, versions: VERSIONS, limits: LIMITS, schedule: schedule(kind).map(item => ({...item, ...armConfig(item.arm)})), node: process.version, platform: process.platform, arch: process.arch, cachePolicy: "No cache warming; provider cache cannot be cleared; record reported usage.", compaction: false, retries: false, formalAuthorized: kind === "formal" });
+    await mkdir(join(output, "runs"), { recursive: true });
+    let errors = 0;
+    for (const item of schedule(kind)) {
+        const id = `${item.workflow}-${item.repeat}-${item.arm}`, record = join(output, "runs", id + ".json");
+        if (await exists(record)) {
+            const prior: Run = JSON.parse(await readFile(record, "utf8"));
+            if (prior.status === "running") {
+                prior.status = "interrupted";
+                prior.success = false;
+                await atomicJson(record, prior);
+            }
+            console.log(`Preserved existing run: ${id}`);
+            continue;
+        }
+        if (errors >= 3) {
+            console.log("Paused after three consecutive provider failures. Resume later with the same batch ID.");
+            break;
+        }
+        const root = resolve(".work", batch, id);
+        if (await exists(root))
+            throw new Error("Unrecorded workspace exists; refusing to overwrite it.");
+        console.log(`Starting ${id}`);
+        const run = await runWorkflow({ root, record, batch, kind, ...item, harnessCommit: commit, fixtureHash: fingerprint });
+        errors = run.status === "provider_error" ? errors + 1 : 0;
+    }
+    await report(output);
+    console.log(`Saved ${kind} report: ${output}/README.md`);
+}
+if (process.argv[1]?.endsWith("/cli.ts"))
+    main().catch(error => { console.error(error instanceof Error && /^(Use |Provide |Formal |Live |Invalid batch|Cannot resume|Unrecorded|Plot generation|The pinned|Benchmark extension)/.test(error.message) ? error.message : "Benchmark could not complete; recorded results were preserved. No provider error body was logged."); process.exitCode = 1; });

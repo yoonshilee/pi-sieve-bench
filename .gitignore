@@ -1,0 +1,10 @@
+node_modules/
+.work/
+.local/
+.env
+.env.*
+*.log
+*.tgz
+__pycache__/
+.venv/
+.DS_Store
