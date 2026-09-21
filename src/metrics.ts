@@ -4,7 +4,9 @@ export const ARMS = ["native", "full", "sieve", "luna-native", "luna-sieve"] as 
 export const RETRIEVAL_ARMS = ["retrieval-local", "retrieval-jev"] as const;
 export const RETRIEVAL_COMMIT = "ba996c7bfceddbee6fa75e03a8f4a323052e8d3c";
 export const RETRIEVAL_MODEL = "gpt-5.6-sol";
-export type Arm = typeof ARMS[number] | typeof RETRIEVAL_ARMS[number];
+export const SCORING_ARMS = ["score-self", "score-jev"] as const;
+export const SCORING_COMMIT = "1620906181b8a96501a277becc8e56ff837e56f8";
+export type Arm = typeof ARMS[number] | typeof RETRIEVAL_ARMS[number] | typeof SCORING_ARMS[number];
 export const RETRIEVAL_QUERIES = [
     "duplicate payment charges after timeout and retry active idempotency contract",
     "sequential payment retries request validation gateway failure retry eligibility",
@@ -23,7 +25,7 @@ export const VERSIONS = { pi: "0.86.1", provider: "openai-codex", model: "gpt-6-
 export function armConfig(arm: Arm): {
     model: string;
     mode: "native" | "full" | "sieve";
-} { return { model: arm.startsWith("retrieval-") ? RETRIEVAL_MODEL : arm.startsWith("luna-") ? "gpt-5.6-luna" : VERSIONS.model, mode: (arm.endsWith("sieve") || arm.startsWith("retrieval-")) ? "sieve" : arm === "full" ? "full" : "native" }; }
+} { return { model: arm.startsWith("retrieval-") || arm.startsWith("score-") ? RETRIEVAL_MODEL : arm.startsWith("luna-") ? "gpt-5.6-luna" : VERSIONS.model, mode: (arm.endsWith("sieve") || arm.startsWith("retrieval-") || arm.startsWith("score-")) ? "sieve" : arm === "full" ? "full" : "native" }; }
 export const LIMITS = { stageMs: 300000, modelRequests: 30 } as const;
 export type Usage = {
     input: number | null;
@@ -59,6 +61,8 @@ export type Stage = {
         responses?: { httpStatus: number | null; headersMs: number; errorKind: "aborted" | "network_error" | null }[];
     };
     retrievals?: { queryMatched: boolean; reason: string; elapsedMs: number | null; selected: number | null; resultChars: number; names: string[] }[];
+    scoring?: { inputHash: string; reason: string; options: number; levels: number; elapsedMs: number | null; results: { id: string; score: number; confidence: number }[] }[];
+    decision?: { inputHash: string | null; scoringAvailable: boolean; valid: boolean; executedSelection: boolean; options: number; levels: number; selectedId: string | null; selectedScore: number | null };
     sieve: Record<string, string | number | boolean> | null;
     answer: string;
 };

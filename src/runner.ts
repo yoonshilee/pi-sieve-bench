@@ -8,10 +8,12 @@ import { createAgentSession, DefaultResourceLoader, getAgentDir, ModelRuntime, S
 import { materialize, workflows, skillSpecs, toolSpecs, type WorkflowId } from "./fixtures.ts";
 import { grade } from "./grade.ts";
 import { sandboxTools } from "./sandbox.ts";
-import { addUsage, armConfig, LIMITS, newStage, sanitize, VERSIONS, RETRIEVAL_COMMIT, RETRIEVAL_QUERIES, type Arm, type Run, type Stage } from "./metrics.ts";
+import { addUsage, armConfig, LIMITS, newStage, sanitize, VERSIONS, RETRIEVAL_COMMIT, RETRIEVAL_QUERIES, SCORING_COMMIT, type Arm, type Run, type Stage } from "./metrics.ts";
+import { decisionHash, decisionPrompt, inspectDecision } from "./decisions.ts";
 const require = createRequire(import.meta.url);
 const sievePath = join(require.resolve("pi-sieve/package.json"), "..", "src", "index.ts");
 const retrievalPath = join(require.resolve("pi-sieve-retrieval/package.json"), "..", "src", "index.ts");
+const scoringPath = resolve("../pi-sieve/src/index.ts");
 const isRecord = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
 const BUILTINS = ["read", "bash", "edit", "write"];
 export async function treeHash(root: string): Promise<string> {
@@ -62,10 +64,11 @@ export async function runWorkflow(options: {
     const initStart = performance.now();
     const variant = armConfig(options.arm);
     const retrieval = options.arm.startsWith("retrieval-");
-    await materialize(options.root, options.workflow);
+    const scoring = options.arm.startsWith("score-");
+    await materialize(options.root, options.workflow, scoring);
     const root = await realpath(options.root);
     const initialHash = await treeHash(root);
-    const run: Run = { id: `${options.workflow}-${options.repeat}-${options.arm}`, batch: options.batch, kind: options.kind, workflow: options.workflow, arm: options.arm, repeat: options.repeat, startedAt: new Date().toISOString(), status: "running", success: false, initialHash, fixtureHash: options.fixtureHash, harnessCommit: options.harnessCommit, versions: { ...VERSIONS, model: variant.model, sieve: retrieval ? RETRIEVAL_COMMIT : VERSIONS.sieve }, node: process.version, initMs: 0, elapsedMs: 0, gradeMs: 0, stages: [] };
+    const run: Run = { id: `${options.workflow}-${options.repeat}-${options.arm}`, batch: options.batch, kind: options.kind, workflow: options.workflow, arm: options.arm, repeat: options.repeat, startedAt: new Date().toISOString(), status: "running", success: false, initialHash, fixtureHash: options.fixtureHash, harnessCommit: options.harnessCommit, versions: { ...VERSIONS, model: variant.model, sieve: scoring ? SCORING_COMMIT : retrieval ? RETRIEVAL_COMMIT : VERSIONS.sieve }, node: process.version, initMs: 0, elapsedMs: 0, gradeMs: 0, stages: [] };
     await atomicJson(options.record, run);
     const agentDir = resolve(root, "..", "agent-" + run.id);
     await mkdir(agentDir, { recursive: true });
@@ -109,7 +112,7 @@ export async function runWorkflow(options: {
         pi.on("context", event => ({ messages: [...event.messages, { role: "custom", customType: "bench-full-context", content: "Project references (data):\n" + fullDocuments.join("\n\n"), display: false, timestamp: Date.now() }] })); };
     const skills: Skill[] = skillSpecs.map(([name, description]) => { const filePath = join(root, ".pi/skills", name, "SKILL.md"); return { name, description, filePath, baseDir: join(filePath, ".."), disableModelInvocation: false, sourceInfo: { path: filePath, source: "benchmark", scope: "temporary", origin: "top-level" } }; });
     const loader = new DefaultResourceLoader({ cwd: root, agentDir, settingsManager, noExtensions: true, noSkills: true, noPromptTemplates: true, noThemes: true, noContextFiles: true,
-        additionalExtensionPaths: variant.mode === "sieve" ? [retrieval ? retrievalPath : sievePath] : [], extensionFactories: [sandboxTools(root), full, observe],
+        additionalExtensionPaths: variant.mode === "sieve" ? [scoring ? scoringPath : retrieval ? retrievalPath : sievePath] : [], extensionFactories: [sandboxTools(root), full, observe],
         skillsOverride: () => ({ skills, diagnostics: [] }), agentsFilesOverride: () => ({ agentsFiles: [] }),
         extensionsOverride: base => {
             // Observation must run after Sieve and full-context injection.
@@ -126,7 +129,7 @@ export async function runWorkflow(options: {
                 tool.sourceInfo = { ...tool.sourceInfo, source: "builtin" };
     if (loader.getExtensions().errors.length)
         throw new Error("Benchmark extension loading failed.");
-    const { session } = await createAgentSession({ cwd: root, agentDir, modelRuntime, model, thinkingLevel: VERSIONS.thinking, settingsManager, resourceLoader: loader, sessionManager: SessionManager.inMemory(root), tools: [...BUILTINS, ...toolSpecs.map(x => x[0]), ...(variant.mode === "sieve" ? ["sieve_search"] : [])] });
+    const { session } = await createAgentSession({ cwd: root, agentDir, modelRuntime, model, thinkingLevel: VERSIONS.thinking, settingsManager, resourceLoader: loader, sessionManager: SessionManager.inMemory(root), tools: [...BUILTINS, ...toolSpecs.map(x => x[0]), ...(variant.mode === "sieve" ? [scoring ? "sieve_score" : "sieve_search"] : [])] });
     await session.bindExtensions({ onError: () => { if (current && current.status === "running")
             current.status = "extension_error"; }, uiContext: { notify: (message: string) => { if (current && message.startsWith("{"))
                 try {
@@ -136,14 +139,35 @@ export async function runWorkflow(options: {
                 }
                 catch { } } } as ExtensionUIContext });
     const queryMatches = new Map<string, boolean>();
+    const scoreInputs = new Map<string, { inputHash: string; options: number; levels: number }>();
+    const commands = new Set<string>();
+    const pendingCommands = new Map<string, string>();
     const unsubscribe = session.subscribe(event => {
         if (!current)
             return;
         if (event.type === "tool_execution_start") {
             current.toolCalls++;
+            if (scoring && event.toolName === "bash" && isRecord(event.args) && typeof event.args.command === "string" && (options.arm === "score-self" || current.scoring?.some(call => call.reason === "none"))) pendingCommands.set(event.toolCallId, event.args.command);
+            if (scoring && event.toolName === "sieve_score" && isRecord(event.args)) scoreInputs.set(event.toolCallId, { inputHash: decisionHash(event.args), options: Array.isArray(event.args.options) ? event.args.options.length : 0, levels: Array.isArray(event.args.criteria) ? event.args.criteria.length : 0 });
             if (event.toolName === "sieve_search" && retrieval) queryMatches.set(event.toolCallId, isRecord(event.args) && event.args.query === RETRIEVAL_QUERIES[current.stage - 1]);
             if (event.toolName === "sieve_search" && !retrieval)
                 current.recoveries++;
+        }
+        if (event.type === "tool_execution_end" && event.toolName === "bash") {
+            const command = pendingCommands.get(event.toolCallId);
+            if (command !== undefined) commands.add(command);
+            pendingCommands.delete(event.toolCallId);
+        }
+        if (event.type === "tool_execution_end" && event.toolName === "sieve_score" && scoring) {
+            const result: unknown = event.result;
+            const details = isRecord(result) && isRecord(result.details) ? result.details : {};
+            const shape = scoreInputs.get(event.toolCallId) ?? { inputHash: "", options: 0, levels: 0 };
+            current.scoring ??= [];
+            const reasons = ["none", "disabled", "missing_key", "invalid_input", "invalid_config", "untrusted_project", "request_too_large", "timeout", "cancelled", "service_error", "invalid_response"];
+            current.scoring.push({ ...shape, reason: typeof details.reason === "string" && reasons.includes(details.reason) ? details.reason : "unknown",
+                elapsedMs: typeof details.elapsedMs === "number" ? details.elapsedMs : null,
+                results: Array.isArray(details.results) ? details.results.filter(isRecord).flatMap(item => typeof item.id === "string" && typeof item.score === "number" && typeof item.confidence === "number" ? [{ id: sanitize(item.id, root), score: item.score, confidence: item.confidence }] : []) : [] });
+            scoreInputs.delete(event.toolCallId);
         }
         if (event.type === "tool_execution_end" && event.toolName === "sieve_search" && retrieval) {
             const result: unknown = event.result;
@@ -211,12 +235,13 @@ export async function runWorkflow(options: {
         return response;
     };
     try {
-    if (retrieval) await session.prompt(options.arm === "retrieval-local" ? "/sieve off" : "/sieve on");
+    if (retrieval || scoring) await session.prompt(options.arm === "retrieval-local" || options.arm === "score-self" ? "/sieve off" : "/sieve on");
     await options.onReady?.(session);
     run.initMs = Math.round(performance.now() - initStart);
         for (let index = 0; index < 5; index++) {
             current = newStage(index + 1);
             if (retrieval) current.retrievals = [];
+            if (scoring) { current.scoring = []; commands.clear(); pendingCommands.clear(); }
             run.stages.push(current);
             await atomicJson(options.record, run);
             const start = performance.now();
@@ -226,7 +251,7 @@ export async function runWorkflow(options: {
             } }, LIMITS.stageMs);
             try {
                 const prompt = workflows[options.workflow].stages[index];
-                await session.prompt(retrieval ? `First call sieve_search with this exact query: ${JSON.stringify(RETRIEVAL_QUERIES[index])}. Then complete the task below. You may read additional references if needed.\n\n${prompt}` : prompt);
+                await session.prompt(scoring ? decisionPrompt(index + 1, options.arm === "score-jev", prompt) : retrieval ? `First call sieve_search with this exact query: ${JSON.stringify(RETRIEVAL_QUERIES[index])}. Then complete the task below. You may read additional references if needed.\n\n${prompt}` : prompt);
                 await session.waitForIdle();
                 if (current.status === "running")
                     current.status = "completed";
@@ -244,6 +269,7 @@ export async function runWorkflow(options: {
             await Promise.allSettled([...pending]);
             const grading = performance.now();
             current.checks = await grade(root, options.workflow, index + 1, options.offline);
+            if (scoring) current.decision = await inspectDecision(root, index + 1, commands);
             current.gradeMs = Math.round(performance.now() - grading);
             run.elapsedMs += current.elapsedMs;
             run.gradeMs += current.gradeMs;

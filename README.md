@@ -6,8 +6,7 @@ All projects and reference data are fictional. This repository contains no share
 credentials. Live runs consume the operator's own model and TypeSafe allowance.
 
 This repository contains the complete experimental setup, results, failure
-analysis, and sanitized run data. The [Pi Sieve README](https://github.com/yoonshilee/pi-sieve#preliminary-benchmark)
-shows a brief visual comparison. **Only pilot data is available; no formal batch
+analysis, and sanitized run data. Historical visualizations remain here as archived diagnostics. **Only pilot data is available; no formal batch
 has been run.** The latest pair evaluates v0.2 on-demand retrieval at `ba996c7`.
 Earlier five-arm pilots evaluate historical v0.1 context filtering at `7d54c8f`;
 their results are kept separate.
@@ -18,6 +17,50 @@ New on-demand experiments use **openai-codex/gpt-5.6-sol, medium**. Saved Astra
 and Luna measurements retain their original model identities. Changing the model
 requires a new batch ID. Earlier experiments are archival diagnostics, excluded
 from future release performance claims. Report and chart updates are deferred.
+
+## Local command-scoring comparison
+
+The v0.3 experiment compares Sol scoring its own command candidates with Sol
+calling `sieve_score` for Jev scores. Each arm completes the same five-stage
+payment workflow three times. Pair order alternates; runs are serial. In each
+stage the model proposes 3-5 commands and an ordered rubric, records one scoring
+decision, and executes its chosen command. Candidates are model-generated and
+can differ across arms. This tests end-to-end delegation, not the accuracy of
+both scorers on identical candidate sets. No command executes inside `sieve_score`.
+
+Both arms expose the same tools, skills, references, and fixed definitions.
+The self-scoring arm turns Jev off. The other uses real Jev, a 10-second benchmark
+timeout, and no retries. The plugin's 1.5-second production default is unchanged.
+Payment callback contracts explicitly reject whitespace-only identifiers in
+this fixture revision; historical fixtures are unchanged. Hidden checks receive
+no scoring artifacts, and the model never receives hidden check results.
+
+Keep the v0.3 plugin checkout adjacent at `../pi-sieve`, on the clean commit
+pinned by `SCORING_COMMIT` in `src/metrics.ts`, then run:
+
+```sh
+npm run check
+npm run score -- score-local-001
+```
+
+The new SDK integration test requires that local checkout and reports a skip
+when it is absent. The live command requires the exact clean commit. Results
+are saved under `reports/<batch>/` as whitelisted JSON, without charts. Resume
+with the same batch ID; completed and failed attempts are preserved. Timing
+includes model, tool, and Jev calls, excluding initialization and hidden grading.
+Token counts include separately reported uncached input, cached input, and
+output; unknown usage and actual charges remain null. Private workspaces retain
+the decision artifacts locally and are ignored by Git.
+
+Decision validation checks the rubric/candidate hash, selected score, and a
+matching bash attempt after the Jev response. This verifies observable protocol
+compliance; it cannot prove the model avoided private internal scoring. Final
+success and independent stage checks measure task quality. Speed ratios include
+only matched successful runs with valid protocol records. Three repeats cannot
+establish statistical significance, and provider caching cannot be reset.
+
+These experiments and code changes stay in local commits. Previous experiments
+are not used to support new release performance claims.
 
 ## Historical five-arm experiment
 

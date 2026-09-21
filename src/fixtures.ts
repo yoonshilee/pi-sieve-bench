@@ -202,7 +202,7 @@ export const toolSpecs = [
 ] as const;
 // The initial 1.5-second pilot timed out before otherwise valid responses arrived.
 export const SIEVE_CONFIG = { timeoutMs: 10000 } as const;
-export async function materialize(root: string, id: WorkflowId): Promise<void> {
+export async function materialize(root: string, id: WorkflowId, scoring = false): Promise<void> {
     const flow = workflows[id];
     const files: Record<string, string> = {
         ...flow.files,
@@ -212,6 +212,10 @@ export async function materialize(root: string, id: WorkflowId): Promise<void> {
     };
     const references = [...flow.rules, ...neighbors].map(([name, description, body]) => ({ kind: "memories", name, description, body })).concat(guides.map(([name, description, body]) => ({ kind: "guides", name, description, body })));
     files["REFERENCES.md"] = "# Reference catalog\n\n" + references.map(r => `- [${r.name}](.pi/sieve/${r.kind}/${r.name}.md): ${r.description}`).join("\n") + "\n\n# Fixed tool data\n\n" + toolSpecs.map(([name, description]) => `- [${name}](data/${name}.json): ${description}`).join("\n") + "\n";
+    if (scoring) {
+        const eventRule = references.find(ref => ref.name === "webhook-events");
+        if (eventRule) eventRule.body = eventRule.body.replace("An event has nonempty string id and chargeId and type 'payment.succeeded'.", "An event has string id and chargeId that are nonempty after trimming for validation, and type 'payment.succeeded'. Preserve the original identifiers.");
+    }
     for (const ref of references)
         files[`.pi/sieve/${ref.kind}/${ref.name}.md`] = `---\nname: ${ref.name}\ndescription: ${ref.description}\n---\n\n${ref.body}\n`;
     for (const [name, description, body] of skillSpecs)
