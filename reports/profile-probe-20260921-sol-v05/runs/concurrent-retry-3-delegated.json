@@ -1,0 +1,39 @@
+{
+  "id": "concurrent-retry-3-delegated",
+  "caseId": "concurrent-retry",
+  "category": "evidence",
+  "arm": "delegated",
+  "repeat": 3,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "retry_overlap",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 10908,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    6903,
+    9393
+  ],
+  "scoreArgumentChars": 556,
+  "executionArgumentChars": 88,
+  "usage": {
+    "input": 2885,
+    "output": 157,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 9,
+    "totalTokens": 3042
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 1428,
+    "dispatchMs": 3080,
+    "inputTokens": 1631,
+    "outputTokens": 116
+  },
+  "failure": null
+}

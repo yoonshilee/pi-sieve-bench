@@ -1,0 +1,38 @@
+{
+  "id": "month-boundary-2-direct",
+  "caseId": "month-boundary",
+  "category": "evidence",
+  "arm": "direct",
+  "repeat": 2,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "date_boundary",
+  "optionMatched": true,
+  "contextMatched": null,
+  "followedSelection": null,
+  "selectionMs": 2984,
+  "requests": 1,
+  "toolCalls": 1,
+  "requestBytes": [
+    6815
+  ],
+  "scoreArgumentChars": 0,
+  "executionArgumentChars": 87,
+  "usage": {
+    "input": 1343,
+    "output": 50,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 12,
+    "totalTokens": 1393
+  },
+  "jev": {
+    "calls": 0,
+    "reason": null,
+    "elapsedMs": null,
+    "dispatchMs": null,
+    "inputTokens": null,
+    "outputTokens": null
+  },
+  "failure": null
+}

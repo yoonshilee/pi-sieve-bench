@@ -1,0 +1,244 @@
+{
+  "experiment": "reused-profile-decision-probe-v0.5",
+  "groups": [
+    {
+      "category": "routine",
+      "arm": "direct",
+      "n": 6,
+      "valid": 6,
+      "correct": 6,
+      "medianMs": 3013,
+      "requests": 6,
+      "usage": {
+        "input": 7719,
+        "output": 147,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoning": 0,
+        "totalTokens": 7866
+      }
+    },
+    {
+      "category": "routine",
+      "arm": "delegated",
+      "n": 6,
+      "valid": 6,
+      "correct": 6,
+      "medianMs": 9639.5,
+      "requests": 12,
+      "usage": {
+        "input": 12710,
+        "output": 512,
+        "cacheRead": 3456,
+        "cacheWrite": 0,
+        "reasoning": 48,
+        "totalTokens": 16678
+      }
+    },
+    {
+      "category": "evidence",
+      "arm": "direct",
+      "n": 12,
+      "valid": 12,
+      "correct": 12,
+      "medianMs": 3745,
+      "requests": 12,
+      "usage": {
+        "input": 16131,
+        "output": 557,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoning": 102,
+        "totalTokens": 16688
+      }
+    },
+    {
+      "category": "evidence",
+      "arm": "delegated",
+      "n": 12,
+      "valid": 12,
+      "correct": 12,
+      "medianMs": 10865,
+      "requests": 24,
+      "usage": {
+        "input": 30716,
+        "output": 1862,
+        "cacheRead": 3840,
+        "cacheWrite": 0,
+        "reasoning": 97,
+        "totalTokens": 36418
+      }
+    }
+  ],
+  "pairs": [
+    {
+      "caseId": "explicit-test",
+      "category": "routine",
+      "repeat": 1,
+      "valid": true,
+      "directMs": 3108,
+      "delegatedMs": 10543,
+      "ratio": 0.29479275348572515
+    },
+    {
+      "caseId": "explicit-runtime",
+      "category": "routine",
+      "repeat": 1,
+      "valid": true,
+      "directMs": 4005,
+      "delegatedMs": 13039,
+      "ratio": 0.30715545670680267
+    },
+    {
+      "caseId": "concurrent-retry",
+      "category": "evidence",
+      "repeat": 1,
+      "valid": true,
+      "directMs": 5112,
+      "delegatedMs": 9067,
+      "ratio": 0.5638028013675968
+    },
+    {
+      "caseId": "tenant-cache",
+      "category": "evidence",
+      "repeat": 1,
+      "valid": true,
+      "directMs": 3526,
+      "delegatedMs": 10822,
+      "ratio": 0.3258177785991499
+    },
+    {
+      "caseId": "month-boundary",
+      "category": "evidence",
+      "repeat": 1,
+      "valid": true,
+      "directMs": 3564,
+      "delegatedMs": 17314,
+      "ratio": 0.20584498094027953
+    },
+    {
+      "caseId": "restart-budget",
+      "category": "evidence",
+      "repeat": 1,
+      "valid": true,
+      "directMs": 5776,
+      "delegatedMs": 8700,
+      "ratio": 0.6639080459770115
+    },
+    {
+      "caseId": "explicit-test",
+      "category": "routine",
+      "repeat": 2,
+      "valid": true,
+      "directMs": 2918,
+      "delegatedMs": 9603,
+      "ratio": 0.3038633760283245
+    },
+    {
+      "caseId": "explicit-runtime",
+      "category": "routine",
+      "repeat": 2,
+      "valid": true,
+      "directMs": 2634,
+      "delegatedMs": 9676,
+      "ratio": 0.2722199255890864
+    },
+    {
+      "caseId": "concurrent-retry",
+      "category": "evidence",
+      "repeat": 2,
+      "valid": true,
+      "directMs": 7216,
+      "delegatedMs": 12922,
+      "ratio": 0.5584274880049528
+    },
+    {
+      "caseId": "tenant-cache",
+      "category": "evidence",
+      "repeat": 2,
+      "valid": true,
+      "directMs": 5960,
+      "delegatedMs": 10078,
+      "ratio": 0.591387179996031
+    },
+    {
+      "caseId": "month-boundary",
+      "category": "evidence",
+      "repeat": 2,
+      "valid": true,
+      "directMs": 2984,
+      "delegatedMs": 11873,
+      "ratio": 0.2513265392066032
+    },
+    {
+      "caseId": "restart-budget",
+      "category": "evidence",
+      "repeat": 2,
+      "valid": true,
+      "directMs": 5568,
+      "delegatedMs": 11473,
+      "ratio": 0.48531334437374707
+    },
+    {
+      "caseId": "explicit-test",
+      "category": "routine",
+      "repeat": 3,
+      "valid": true,
+      "directMs": 2856,
+      "delegatedMs": 8532,
+      "ratio": 0.33473980309423346
+    },
+    {
+      "caseId": "explicit-runtime",
+      "category": "routine",
+      "repeat": 3,
+      "valid": true,
+      "directMs": 3901,
+      "delegatedMs": 8698,
+      "ratio": 0.4484939066452058
+    },
+    {
+      "caseId": "concurrent-retry",
+      "category": "evidence",
+      "repeat": 3,
+      "valid": true,
+      "directMs": 3817,
+      "delegatedMs": 10908,
+      "ratio": 0.3499266593325999
+    },
+    {
+      "caseId": "tenant-cache",
+      "category": "evidence",
+      "repeat": 3,
+      "valid": true,
+      "directMs": 3214,
+      "delegatedMs": 9724,
+      "ratio": 0.3305224187577129
+    },
+    {
+      "caseId": "month-boundary",
+      "category": "evidence",
+      "repeat": 3,
+      "valid": true,
+      "directMs": 3673,
+      "delegatedMs": 11689,
+      "ratio": 0.314227051073659
+    },
+    {
+      "caseId": "restart-budget",
+      "category": "evidence",
+      "repeat": 3,
+      "valid": true,
+      "directMs": 3295,
+      "delegatedMs": 10100,
+      "ratio": 0.32623762376237625
+    }
+  ],
+  "actualCostUsd": null,
+  "gate": {
+    "fullWorkflowRecommended": false,
+    "completeValidEvidencePairs": 12,
+    "medianDirectOverDelegated": 0.34022453904515637,
+    "rule": "All 12 evidence pairs must be correct and valid; median paired delegated selection-to-dispatch time must be at least 10 percent lower. Routine cases are negative controls. This exploratory gate is not proof of general benefit."
+  }
+}

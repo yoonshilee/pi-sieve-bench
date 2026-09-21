@@ -1,0 +1,39 @@
+{
+  "id": "month-boundary-3-delegated",
+  "caseId": "month-boundary",
+  "category": "evidence",
+  "arm": "delegated",
+  "repeat": 3,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "date_boundary",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 11689,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    6890,
+    9423
+  ],
+  "scoreArgumentChars": 545,
+  "executionArgumentChars": 87,
+  "usage": {
+    "input": 2882,
+    "output": 160,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 14,
+    "totalTokens": 3042
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 3728,
+    "dispatchMs": 3705,
+    "inputTokens": 1634,
+    "outputTokens": 116
+  },
+  "failure": null
+}

@@ -1,0 +1,38 @@
+{
+  "id": "concurrent-retry-2-direct",
+  "caseId": "concurrent-retry",
+  "category": "evidence",
+  "arm": "direct",
+  "repeat": 2,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "retry_overlap",
+  "optionMatched": true,
+  "contextMatched": null,
+  "followedSelection": null,
+  "selectionMs": 7216,
+  "requests": 1,
+  "toolCalls": 1,
+  "requestBytes": [
+    6828
+  ],
+  "scoreArgumentChars": 0,
+  "executionArgumentChars": 88,
+  "usage": {
+    "input": 1346,
+    "output": 57,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 19,
+    "totalTokens": 1403
+  },
+  "jev": {
+    "calls": 0,
+    "reason": null,
+    "elapsedMs": null,
+    "dispatchMs": null,
+    "inputTokens": null,
+    "outputTokens": null
+  },
+  "failure": null
+}

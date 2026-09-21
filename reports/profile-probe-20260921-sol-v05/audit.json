@@ -1,0 +1,88 @@
+{
+  "verifiedAt": "2026-09-21T14:34:33.574Z",
+  "experiment": "reused-profile-decision-probe-v0.5",
+  "sourceHash": "418637518379a9dd535d452d45406d8c87442657a491e2531c73d421a02dc2fe",
+  "sieveCommit": "5031c1a9fc397eb61710c9075b0e751579f5794c",
+  "harnessCommit": "6ee8e2ef85bb6c3aff6db5c7720db9cd195fa3aa",
+  "checks": {
+    "runs": 36,
+    "uniqueRuns": 36,
+    "allSelectionsCorrect": true,
+    "scheduleMatches": true,
+    "frozenSourcesMatch": true,
+    "summaryRegeneratedExactly": true,
+    "individualRecordsMatchJsonl": true,
+    "usageArithmeticValid": true,
+    "knownMainModelUsage": true,
+    "knownJevUsage": true,
+    "exactContexts": 18,
+    "selectionsSubmittedUnchangedAfterResponse": 18,
+    "jevFallbacks": 0
+  },
+  "totals": [
+    {
+      "arm": "direct",
+      "requests": 18,
+      "usage": {
+        "input": 23850,
+        "output": 704,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoning": 102,
+        "totalTokens": 24554
+      },
+      "totalRequestBytes": 120666
+    },
+    {
+      "arm": "delegated",
+      "requests": 36,
+      "usage": {
+        "input": 43426,
+        "output": 2374,
+        "cacheRead": 7296,
+        "cacheWrite": 0,
+        "reasoning": 145,
+        "totalTokens": 53096
+      },
+      "totalRequestBytes": 277363
+    }
+  ],
+  "jev": {
+    "requests": 18,
+    "inputTokens": 29016,
+    "outputTokens": 2088,
+    "latencyMs": {
+      "min": 1302,
+      "median": 1736,
+      "max": 8920,
+      "total": 45133
+    },
+    "dispatchMs": {
+      "min": 2390,
+      "median": 3267.5,
+      "max": 5273,
+      "total": 62706
+    },
+    "aboveProductionDeadline": 11,
+    "benchmarkTimeoutMs": 10000
+  },
+  "gate": {
+    "fullWorkflowRecommended": false,
+    "completeValidEvidencePairs": 12,
+    "medianDirectOverDelegated": 0.34022453904515637,
+    "rule": "All 12 evidence pairs must be correct and valid; median paired delegated selection-to-dispatch time must be at least 10 percent lower. Routine cases are negative controls. This exploratory gate is not proof of general benefit."
+  },
+  "fullWorkflowRun": false,
+  "actualCostUsd": null,
+  "limitations": [
+    "Six authored fictional short-context cases with three paired repeats; no statistical significance or general task-quality claim.",
+    "Commands were submitted to a measurement sink, not executed; latency is decision-to-dispatch time, not workflow time.",
+    "Both arms used identical fixed tools, profiles and facts; the direct arm is not unmodified native Pi.",
+    "Profile authoring, evidence gathering, initialization and final acknowledgements are excluded; delegation was forced only to measure its cost, including routine negative controls.",
+    "Server caches and service variation cannot be controlled. Cache usage is recorded.",
+    "The 10-second benchmark timeout differs from the 1.5-second production default.",
+    "Reasoning tokens are already included in output; tokens do not represent actual subscription charges.",
+    "One live preflight and historical experiments are excluded from statistics. Local data only, no charts or public performance report.",
+    "Two dependency version labels in the plugin lockfile disagreed with their resolved tarballs; the installed and executed lambda-invoke-store packages were version 0.3.0. A follow-up metadata correction does not change the frozen results."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "explicit-test-2-delegated",
+  "caseId": "explicit-test",
+  "category": "routine",
+  "arm": "delegated",
+  "repeat": 2,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "tests",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 9603,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    6536,
+    7083
+  ],
+  "scoreArgumentChars": 192,
+  "executionArgumentChars": 35,
+  "usage": {
+    "input": 1528,
+    "output": 74,
+    "cacheRead": 1152,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 2754
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 3696,
+    "dispatchMs": 2390,
+    "inputTokens": 1569,
+    "outputTokens": 116
+  },
+  "failure": null
+}

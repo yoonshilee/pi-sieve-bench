@@ -1,0 +1,39 @@
+{
+  "id": "restart-budget-3-delegated",
+  "caseId": "restart-budget",
+  "category": "evidence",
+  "arm": "delegated",
+  "repeat": 3,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "retry_restart",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 10100,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    6901,
+    7875
+  ],
+  "scoreArgumentChars": 556,
+  "executionArgumentChars": 98,
+  "usage": {
+    "input": 2869,
+    "output": 147,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 3016
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 1426,
+    "dispatchMs": 2998,
+    "inputTokens": 1632,
+    "outputTokens": 116
+  },
+  "failure": null
+}

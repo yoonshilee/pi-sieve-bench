@@ -1,0 +1,38 @@
+{
+  "id": "explicit-runtime-3-direct",
+  "caseId": "explicit-runtime",
+  "category": "routine",
+  "arm": "direct",
+  "repeat": 3,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "runtime",
+  "optionMatched": true,
+  "contextMatched": null,
+  "followedSelection": null,
+  "selectionMs": 3901,
+  "requests": 1,
+  "toolCalls": 1,
+  "requestBytes": [
+    6491
+  ],
+  "scoreArgumentChars": 0,
+  "executionArgumentChars": 43,
+  "usage": {
+    "input": 1288,
+    "output": 25,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 1313
+  },
+  "jev": {
+    "calls": 0,
+    "reason": null,
+    "elapsedMs": null,
+    "dispatchMs": null,
+    "inputTokens": null,
+    "outputTokens": null
+  },
+  "failure": null
+}

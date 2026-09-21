@@ -1,0 +1,206 @@
+{
+  "experiment": "reused-profile-decision-probe-v0.5",
+  "sourceHash": "418637518379a9dd535d452d45406d8c87442657a491e2531c73d421a02dc2fe",
+  "harnessCommit": "6ee8e2ef85bb6c3aff6db5c7720db9cd195fa3aa",
+  "sieveCommit": "5031c1a9fc397eb61710c9075b0e751579f5794c",
+  "createdAt": "2026-09-21T14:26:56.584Z",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "sieve": "5031c1a9fc397eb61710c9075b0e751579f5794c"
+  },
+  "limits": {
+    "trialMs": 90000,
+    "mainRequests": 4,
+    "jevTimeoutMs": 10000
+  },
+  "schedule": [
+    {
+      "caseId": "explicit-test",
+      "repeat": 1,
+      "arm": "direct"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 1,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 1,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 1,
+      "arm": "direct"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 1,
+      "arm": "direct"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 1,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 1,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 1,
+      "arm": "direct"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 1,
+      "arm": "direct"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 1,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 1,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 1,
+      "arm": "direct"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 2,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 2,
+      "arm": "direct"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 2,
+      "arm": "direct"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 2,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 2,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 2,
+      "arm": "direct"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 2,
+      "arm": "direct"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 2,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 2,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 2,
+      "arm": "direct"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 2,
+      "arm": "direct"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 2,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 3,
+      "arm": "direct"
+    },
+    {
+      "caseId": "explicit-test",
+      "repeat": 3,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 3,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "explicit-runtime",
+      "repeat": 3,
+      "arm": "direct"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 3,
+      "arm": "direct"
+    },
+    {
+      "caseId": "concurrent-retry",
+      "repeat": 3,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 3,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "tenant-cache",
+      "repeat": 3,
+      "arm": "direct"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 3,
+      "arm": "direct"
+    },
+    {
+      "caseId": "month-boundary",
+      "repeat": 3,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 3,
+      "arm": "delegated"
+    },
+    {
+      "caseId": "restart-budget",
+      "repeat": 3,
+      "arm": "direct"
+    }
+  ],
+  "method": "Both arms see identical fixed profile candidates and facts; fresh Pi SDK sessions with identical tools. Direct Sol chooses an action; delegated Sol sends the existing profile and supplied facts to real Jev then submits the selection. Timing stops at the action sink, including handoff but excluding initialization and any later acknowledgement. No shell execution or task-success claim. Answers are hidden from model inputs. No selective reruns.",
+  "gate": "All 12 evidence pairs must be correct and valid; median paired delegated selection-to-dispatch time must be at least 10 percent lower. Routine cases are negative controls. This exploratory gate is not proof of general benefit.",
+  "cachePolicy": "Serial alternating order; provider caches cannot be reset.",
+  "publication": "Local only; historical batches excluded."
+}

@@ -1,0 +1,38 @@
+{
+  "id": "tenant-cache-2-direct",
+  "caseId": "tenant-cache",
+  "category": "evidence",
+  "arm": "direct",
+  "repeat": 2,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "cache_partition",
+  "optionMatched": true,
+  "contextMatched": null,
+  "followedSelection": null,
+  "selectionMs": 5960,
+  "requests": 1,
+  "toolCalls": 1,
+  "requestBytes": [
+    6801
+  ],
+  "scoreArgumentChars": 0,
+  "executionArgumentChars": 93,
+  "usage": {
+    "input": 1345,
+    "output": 36,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 1381
+  },
+  "jev": {
+    "calls": 0,
+    "reason": null,
+    "elapsedMs": null,
+    "dispatchMs": null,
+    "inputTokens": null,
+    "outputTokens": null
+  },
+  "failure": null
+}

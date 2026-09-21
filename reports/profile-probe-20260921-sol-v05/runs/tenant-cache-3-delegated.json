@@ -1,0 +1,39 @@
+{
+  "id": "tenant-cache-3-delegated",
+  "caseId": "tenant-cache",
+  "category": "evidence",
+  "arm": "delegated",
+  "repeat": 3,
+  "status": "completed",
+  "correct": true,
+  "selectedId": "cache_partition",
+  "optionMatched": true,
+  "contextMatched": true,
+  "followedSelection": true,
+  "selectionMs": 9724,
+  "requests": 2,
+  "toolCalls": 2,
+  "requestBytes": [
+    6876,
+    7822
+  ],
+  "scoreArgumentChars": 533,
+  "executionArgumentChars": 93,
+  "usage": {
+    "input": 1592,
+    "output": 146,
+    "cacheRead": 1280,
+    "cacheWrite": 0,
+    "reasoning": 0,
+    "totalTokens": 3018
+  },
+  "jev": {
+    "calls": 1,
+    "reason": "none",
+    "elapsedMs": 1702,
+    "dispatchMs": 3628,
+    "inputTokens": 1634,
+    "outputTokens": 116
+  },
+  "failure": null
+}
