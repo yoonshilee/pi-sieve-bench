@@ -1,0 +1,57 @@
+{
+  "experiment": "caller-defined-command-scoring-v0.3",
+  "batch": "score-20260921-sol-v03",
+  "createdAt": "2026-09-21T11:10:33.430Z",
+  "sourceHash": "901c56078b0995a8833fe5e764773fa5b747dcd1e8fa3469b0eb58aecc6714c3",
+  "harnessCommit": "a7021069e2dc0e5f75c584dd7f168f1ed2a3c85a",
+  "sieveCommit": "1620906181b8a96501a277becc8e56ff837e56f8",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "sieve": "1620906181b8a96501a277becc8e56ff837e56f8"
+  },
+  "sieveConfig": {
+    "timeoutMs": 10000
+  },
+  "limits": {
+    "stageMs": 300000,
+    "modelRequests": 30
+  },
+  "schedule": [
+    {
+      "repeat": 1,
+      "arm": "score-self"
+    },
+    {
+      "repeat": 1,
+      "arm": "score-jev"
+    },
+    {
+      "repeat": 2,
+      "arm": "score-jev"
+    },
+    {
+      "repeat": 2,
+      "arm": "score-self"
+    },
+    {
+      "repeat": 3,
+      "arm": "score-self"
+    },
+    {
+      "repeat": 3,
+      "arm": "score-jev"
+    }
+  ],
+  "workflow": "payments",
+  "fixtureRevision": "explicit-nonblank-callback-ids",
+  "node": "v22.23.2",
+  "method": "Each model authors 3-5 command candidates and a shared rubric once per stage, then scores itself or calls real sieve_score. Both record and execute their chosen command. Candidate sets may differ. Five continuous stages per run; no grading feedback. No selective reruns.",
+  "cachePolicy": "Serial alternating pair order; native server caches cannot be cleared. Three repeats do not establish statistical significance.",
+  "publication": "Local only. No charts or public performance report.",
+  "stoppedAt": "2026-09-21T11:20:40.777Z",
+  "stopReason": "Real Jev returned HTTP 200 but score validation rejected the response. Batch stopped to diagnose the integration; no performance conclusions. The active stage was interrupted and its incomplete usage is not recoverable."
+}

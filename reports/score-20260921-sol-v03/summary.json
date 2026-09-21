@@ -1,0 +1,18 @@
+{
+  "excludedFromPerformanceComparison": true,
+  "reason": "Integration failure; incomplete batch.",
+  "runs": [
+    {
+      "id": "payments-1-score-self",
+      "status": "completed",
+      "success": true,
+      "completedStages": 5
+    },
+    {
+      "id": "payments-1-score-jev",
+      "status": "interrupted",
+      "success": false,
+      "completedStages": 1
+    }
+  ]
+}

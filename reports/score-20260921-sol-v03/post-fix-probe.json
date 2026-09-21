@@ -1,0 +1,12 @@
+{
+  "kind": "integration-diagnostic",
+  "excludedFromPerformanceComparison": true,
+  "recordedAt": "2026-09-21T11:21:46.470Z",
+  "available": true,
+  "reason": "none",
+  "elapsedMs": 1684,
+  "evaluated": 3,
+  "model": "jev-1.13.0",
+  "inputTokens": 695,
+  "outputTokens": 46
+}

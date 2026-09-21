@@ -1,0 +1,161 @@
+{
+  "id": "payments-1-score-jev",
+  "batch": "score-20260921-sol-v03",
+  "kind": "pilot",
+  "workflow": "payments",
+  "arm": "score-jev",
+  "repeat": 1,
+  "startedAt": "2026-09-21T11:17:37.873Z",
+  "status": "interrupted",
+  "success": false,
+  "initialHash": "0b6c505c84bfbca77ec59c60b22f4c9e0b75e45cee80cba3f2c5ae34b2c4d54b",
+  "fixtureHash": "901c56078b0995a8833fe5e764773fa5b747dcd1e8fa3469b0eb58aecc6714c3",
+  "harnessCommit": "a7021069e2dc0e5f75c584dd7f168f1ed2a3c85a",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "sieve": "1620906181b8a96501a277becc8e56ff837e56f8"
+  },
+  "node": "v22.23.2",
+  "initMs": 19,
+  "elapsedMs": 77237,
+  "gradeMs": 113,
+  "stages": [
+    {
+      "stage": 1,
+      "status": "completed",
+      "elapsedMs": 77237,
+      "gradeMs": 113,
+      "checks": [
+        {
+          "id": "diagnosis",
+          "passed": true
+        },
+        {
+          "id": "reproduction-script",
+          "passed": true
+        },
+        {
+          "id": "bug-observed-without-premature-fix",
+          "passed": true
+        }
+      ],
+      "requests": 10,
+      "requestBytes": [
+        16377,
+        26738,
+        32469,
+        36730,
+        41059,
+        41672,
+        45947,
+        46265,
+        48916,
+        50110
+      ],
+      "contextChars": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleSkills": [
+        6
+      ],
+      "visibleTools": [
+        11
+      ],
+      "toolCalls": 22,
+      "toolErrors": 1,
+      "recoveries": 0,
+      "usage": {
+        "input": 9431,
+        "output": 2574,
+        "cacheRead": 56192,
+        "cacheWrite": 0,
+        "reasoning": 602,
+        "totalTokens": 68197
+      },
+      "jev": {
+        "requests": 1,
+        "inputTokens": 1072,
+        "outputTokens": 46,
+        "responses": [
+          {
+            "httpStatus": 200,
+            "headersMs": 1114,
+            "errorKind": null
+          }
+        ]
+      },
+      "sieve": {
+        "enabled": true,
+        "operation": "score",
+        "reason": "invalid_response",
+        "evaluated": 0,
+        "elapsedMs": 1117
+      },
+      "answer": "Implemented investigation artifacts without modifying production code:\n\n- Added `scripts/reproduce.ts`\n- Reproduction output: `{\"charges\":2}`\n- Added `diagnosis.json` documenting the duplicate charge\n- Added required `decision-1.json`\n- `npm test`: 1 test passed\n\nThe script demonstrates a successful gateway charge followed by a simulated timeout; retrying the same payment key creates a second charge.",
+      "scoring": [
+        {
+          "inputHash": "234d850baf92d0ed8e6d1d0baa037d3c2df31c5803ce549f8e160af7bb282ca2",
+          "options": 3,
+          "levels": 4,
+          "reason": "invalid_response",
+          "elapsedMs": 1117,
+          "results": []
+        }
+      ],
+      "decision": {
+        "valid": false,
+        "executedSelection": false,
+        "options": 0,
+        "levels": 0,
+        "selectedId": null,
+        "selectedScore": null,
+        "inputHash": null,
+        "scoringAvailable": false
+      }
+    },
+    {
+      "stage": 2,
+      "status": "running",
+      "elapsedMs": 0,
+      "gradeMs": 0,
+      "checks": [],
+      "requests": 0,
+      "requestBytes": [],
+      "contextChars": [],
+      "visibleSkills": [],
+      "visibleTools": [],
+      "toolCalls": 0,
+      "toolErrors": 0,
+      "recoveries": 0,
+      "usage": {
+        "input": null,
+        "output": null,
+        "cacheRead": null,
+        "cacheWrite": null,
+        "reasoning": null,
+        "totalTokens": null
+      },
+      "jev": {
+        "requests": 0,
+        "inputTokens": null,
+        "outputTokens": null
+      },
+      "sieve": null,
+      "answer": "",
+      "scoring": []
+    }
+  ]
+}
