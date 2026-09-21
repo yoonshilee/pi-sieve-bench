@@ -1,9 +1,16 @@
 # Pi Sieve Bench
 
-A private, reproducible comparison of Native Pi, full reference injection, and
+A public, reproducible comparison of Native Pi, full reference injection, and
 [Pi Sieve](https://github.com/yoonshilee/pi-sieve) on five-stage development workflows.
 All projects and reference data are fictional. This repository contains no shared
 credentials. Live runs consume the operator's own model and TypeSafe allowance.
+
+This repository contains the complete experimental setup, results, failure
+analysis, and sanitized run data. The [Pi Sieve README](https://github.com/yoonshilee/pi-sieve#preliminary-benchmark)
+shows a brief visual comparison. **Only pilot data is available; no formal batch
+has been run.**
+
+[Experimental setup](#experiment) · [Results](#results) · [Reproduction](#setup-and-commands)
 
 ## Experiment
 
@@ -103,9 +110,10 @@ Small sample ranges and individual points are shown, without a statistical
 significance claim. Token quantities are not invoices; subscription pricing and
 missing Jev usage prevent a trustworthy dollar total.
 
-Only aggregate tables, figures, versions, sample sizes, and limitations will be
-copied to the public Pi Sieve README after a confirmed formal batch. Public figures
-must be stored publicly rather than linked to private repository assets.
+The Pi Sieve README shows a compact, explicitly preliminary pilot figure and links
+here for methods, results, and limitations. Figures and sanitized data are public
+in this repository. Pilot observations remain separate from any future confirmed
+formal batch and do not establish general performance gains.
 
 ## Privacy and repository checks
 
@@ -166,7 +174,6 @@ Luna Sieve passed all final checks but took 622.971 seconds and 462,932 tokens. 
 [Complete revised report](reports/pilot-20260921-jev10s/README.md) · [CSV](reports/pilot-20260921-jev10s/runs.csv) · [JSONL](reports/pilot-20260921-jev10s/runs.jsonl) · [Failure reproduction](reports/pilot-20260921-jev10s/failure-analysis.json)
 
 ![Revised pilot with all ten Jev selections successful](reports/pilot-20260921-jev10s/benchmark.png)
-
 
 ### Initial pilot: 2026-09-21, 1.5-second timeout
 
