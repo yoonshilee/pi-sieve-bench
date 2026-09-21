@@ -18,6 +18,46 @@ and Luna measurements retain their original model identities. Changing the model
 requires a new batch ID. Earlier experiments are archival diagnostics, excluded
 from future release performance claims. Report and chart updates are deferred.
 
+## Native pi-jev comparison
+
+`npm run probe:pi-jev -- pi-jev-probe-local-001` runs the same six frozen
+decision cases three times per native mode: **36 new trials**. It loads the
+unmodified [pi-jev extension](https://github.com/TheoOliveira/pi-jev/tree/549c2bfa249269d0f5590658b5743801c47af369)
+at `549c2bf` (v0.5.0, TypeSafe SDK 0.6.0), using Pi 0.86.1 and Sol medium.
+Only `jev_evaluate` and the same action sink are available. Automatic routing,
+tool guarding, agents, and compaction are disabled.
+
+- **Score:** eight native Score questions reuse the exact candidate commands,
+  question, and three-level rubric. The main model copies the frozen arguments,
+  then forwards the maximum-score candidate; ties follow input order.
+- **Choice:** one native Choice question contains the same options and rubric.
+  The main model forwards the returned ID and command without semantic reranking.
+
+Neither native mode has Sieve's profile shortcut. Questions are supplied once in
+the initial prompt and must be emitted as tool arguments. Native pi-jev returns
+full answer objects; Sieve returns a selected candidate. These are comparisons of
+native calling workflows, **not isolated plugin speed**. Choice also changes the
+decision primitive. The shared cases, factual context, correct answers, main model,
+reasoning level, three repeats, 90-second limit, four-request cap, and action-sink
+timing match the previous probe. Commands are recorded, not executed.
+
+The observer checks outbound arguments exactly, pins `jev-1.13.0`, validates
+responses, captures only usage and timing, applies the same 10-second Jev deadline,
+and blocks additional outbound attempts. Native SDK error backoff may still occur
+and is counted; no source patch disables it. Native Pi credentials are passed to
+pi-jev through an ephemeral environment key. SDK logging is disabled and the API
+root is fixed. The observer restores the environment and fetch on exit. This
+process-wide observer requires serial runs.
+
+The new batch is compared with the preserved `profile-probe-20260921-sol-v05`
+direct and Sieve trials. Controls ran in a **different time block**; service load
+and provider caching cannot be controlled or inferred away. The manifest records
+their data hash. All failed and interrupted attempts remain; resume never repeats
+them. `npm run report -- <batch>` generates JSON/CSV offline without charts or
+model calls. Comparisons require correct, protocol-valid matched cases; missing
+usage stays null, reasoning is a subset of output, and actual dollar cost remains
+unknown. Results remain local and do not support release performance claims.
+
 ## Reused-profile decision probe (v0.5)
 
 The first gate isolates one decision instead of rerunning long workflows. Six

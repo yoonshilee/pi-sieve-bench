@@ -1,12 +1,14 @@
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { Type } from "typebox";
 import { createAgentSession, DefaultResourceLoader, getAgentDir, ModelRuntime, SessionManager, SettingsManager, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { atomicJson } from "./runner.ts";
 import { addUsage, emptyUsage, median, RETRIEVAL_MODEL, SCORING_COMMIT, VERSIONS } from "./metrics.ts";
 import { failureKind } from "./decisions.ts";
 import { DECISION_PROFILE, decisionCases, decisionProfile, type DecisionCase } from "./decision-cases.ts";
+import { installPiJevProbe, PI_JEV_ENTRY, PI_JEV_TOOL, piJevRequest, piJevSelection, type PiJevMode } from "./pi-jev-probe.ts";
 
 const ARMS = ["direct", "delegated"] as const;
 type Arm = typeof ARMS[number];
@@ -17,7 +19,7 @@ const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typ
 export const probeSchedule = () => [1, 2, 3].flatMap(repeat => decisionCases.flatMap((item, index) =>
     ((repeat + index) % 2 ? [...ARMS] : [...ARMS].reverse()).map(arm => ({ caseId: item.id, repeat, arm }))));
 
-export async function probeDecision(root: string, item: DecisionCase, arm: Arm, repeat: number, providedRuntime?: ModelRuntime) {
+export async function probeDecision(root: string, item: DecisionCase, arm: Arm, repeat: number, providedRuntime?: ModelRuntime, piJevMode?: PiJevMode) {
     const record = { id: `${item.id}-${repeat}-${arm}`, caseId: item.id, category: item.category, arm, repeat,
         status: "running", correct: false, selectedId: null as string | null, optionMatched: false,
         contextMatched: null as boolean | null, followedSelection: null as boolean | null,
@@ -33,6 +35,9 @@ export async function probeDecision(root: string, item: DecisionCase, arm: Arm, 
     const runtime = providedRuntime ?? await ModelRuntime.create({ authPath: join(getAgentDir(), "auth.json"), modelsPath: null, modelsStorePath: join(agentDir, "models.json"), refreshOnCreate: false });
     const model = runtime.getModel(VERSIONS.provider, RETRIEVAL_MODEL);
     if (!model) throw new Error("The pinned main model is unavailable.");
+    const native = piJevMode ? await installPiJevProbe(runtime, item.context, piJevMode) : undefined;
+    const decisionTool = native ? PI_JEV_TOOL : "sieve_score";
+    try {
     const settingsManager = SettingsManager.inMemory({ compaction: { enabled: false }, retry: { enabled: false, provider: { maxRetries: 0 } }, cacheWarming: "off", transport: "sse" }, { projectTrusted: true });
     let started = 0, done = false, assistantSequence = 0, returnedAt = 0, selectionSequence = 0;
     let selected: { id: string; content: string } | undefined;
@@ -63,13 +68,13 @@ export async function probeDecision(root: string, item: DecisionCase, arm: Arm, 
         });
     };
     const loader = new DefaultResourceLoader({ cwd: root, agentDir, settingsManager, noExtensions: true, noSkills: true, noPromptTemplates: true, noThemes: true, noContextFiles: true,
-        additionalExtensionPaths: [resolve("../pi-sieve/src/index.ts")], extensionFactories: [observe],
+        additionalExtensionPaths: [native ? PI_JEV_ENTRY : resolve("../pi-sieve/src/index.ts")], extensionFactories: [observe],
         skillsOverride: () => ({ skills: [], diagnostics: [] }), agentsFilesOverride: () => ({ agentsFiles: [] }),
-        appendSystemPrompt: [`This is a bounded decision measurement, not a coding task. Only the supplied tools are available. Candidate commands describe fictional probes. Submit exactly one action through ${EXECUTE}; no files or shell commands are executed. Known profile ${DECISION_PROFILE}: ${JSON.stringify(decisionProfile)}`] });
+        appendSystemPrompt: [`This is a bounded decision measurement, not a coding task. Only the supplied tools are available. Candidate commands describe fictional probes. Submit exactly one action through ${EXECUTE}; no files or shell commands are executed.${native ? "" : ` Known profile ${DECISION_PROFILE}: ${JSON.stringify(decisionProfile)}`}`] });
     await loader.reload();
     if (loader.getExtensions().errors.length) throw new Error("Benchmark extension loading failed.");
     const { session } = await createAgentSession({ cwd: root, agentDir, modelRuntime: runtime, model, thinkingLevel: "medium", settingsManager, resourceLoader: loader,
-        sessionManager: SessionManager.inMemory(root), tools: ["sieve_score", EXECUTE] });
+        sessionManager: SessionManager.inMemory(root), tools: [decisionTool, EXECUTE] });
     await session.bindExtensions({ onError: () => { if (!done) record.status = "extension_error"; } });
     const unsubscribe = session.subscribe(event => {
         if (event.type === "message_end" && event.message.role === "assistant") {
@@ -79,37 +84,46 @@ export async function probeDecision(root: string, item: DecisionCase, arm: Arm, 
         }
         if (event.type === "tool_execution_start") {
             record.toolCalls++;
-            if (event.toolName === "sieve_score") {
+            if (event.toolName === decisionTool) {
                 record.jev.calls++;
                 record.scoreArgumentChars += JSON.stringify(event.args).length;
-                record.contextMatched = isRecord(event.args) && event.args.context === item.context && event.args.profile === DECISION_PROFILE && Object.keys(event.args).length === 2;
+                record.contextMatched = piJevMode ? isDeepStrictEqual(event.args, piJevRequest(item.context, piJevMode)) : isRecord(event.args) && event.args.context === item.context && event.args.profile === DECISION_PROFILE && Object.keys(event.args).length === 2;
             }
         }
-        if (event.type === "tool_execution_end" && event.toolName === "sieve_score") {
+        if (event.type === "tool_execution_end" && event.toolName === decisionTool) {
             const result: unknown = event.result;
             const details = isRecord(result) && isRecord(result.details) ? result.details : {};
             const choice = isRecord(details.selected) ? details.selected : {};
             const reasons = ["none", "timeout", "cancelled", "service_error", "invalid_response", "invalid_input", "disabled", "missing_key", "invalid_config", "untrusted_project", "request_too_large"];
             record.jev.reason = typeof details.reason === "string" && reasons.includes(details.reason) ? details.reason : "unknown";
             for (const field of ["elapsedMs", "inputTokens", "outputTokens"] as const) record.jev[field] = typeof details[field] === "number" ? details[field] : null;
-            selected = details.available === true && typeof choice.id === "string" && typeof choice.content === "string" ? { id: choice.id, content: choice.content } : undefined;
+            selected = piJevMode ? piJevSelection(details, piJevMode) : details.available === true && typeof choice.id === "string" && typeof choice.content === "string" ? { id: choice.id, content: choice.content } : undefined;
+            if (native) {
+                record.jev.reason = native.diagnostics.reason;
+                record.jev.inputTokens = native.diagnostics.inputTokens;
+                record.jev.outputTokens = native.diagnostics.outputTokens;
+                if (!native.diagnostics.responseValid) selected = undefined;
+            }
             returnedAt = performance.now(); selectionSequence = assistantSequence;
         }
     });
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-        await session.prompt(arm === "direct" ? "/sieve off" : "/sieve on");
-        if (!providedRuntime && !await session.extensionRunner!.createContext().modelRegistry.getApiKeyForProvider("typesafe")) throw new Error("The pinned TypeSafe credential is unavailable.");
-        const instruction = arm === "direct"
+        if (!native) await session.prompt(arm === "direct" ? "/sieve off" : "/sieve on");
+        if (!native && !providedRuntime && !await session.extensionRunner!.createContext().modelRegistry.getApiKeyForProvider("typesafe")) throw new Error("The pinned TypeSafe credential is unavailable.");
+        const instruction = piJevMode
+            ? `Call ${PI_JEV_TOOL} once with exactly this JSON argument: ${JSON.stringify(piJevRequest(item.context, piJevMode))}. Do not change the supplied facts, candidates, or rubric, or perform your own semantic ranking. ${piJevMode === "choice" ? "Use next_action.value as the selected candidate ID; criteria maps IDs to command contents." : "Select the candidate whose q-index answer has the highest numeric value; break exact ties by the original candidate order. Each question's instructions contains its candidate ID and content."} Then call ${EXECUTE} with that candidate's exact id and content. If the evaluation fails, report no choice.`
+            : arm === "direct"
             ? `Use your own judgment to choose the best profile option, then call ${EXECUTE} with its exact id and content. Do not call sieve_score. No written ranking or explanation is needed.`
             : `Call sieve_score once with profile ${DECISION_PROFILE} and the exact context string below. Do not write candidates, a rubric, or your own ranking. Then call ${EXECUTE} with selected.id and selected.content unchanged. If unavailable, report no choice.`;
         started = performance.now();
         timer = setTimeout(() => { if (!done) { record.status = "timeout"; void session.abort(); } }, LIMITS.trialMs);
-        try { await session.prompt(`${instruction}\nContext: ${JSON.stringify(item.context)}`); await session.waitForIdle(); }
+        try { await session.prompt(piJevMode ? instruction : `${instruction}\nContext: ${JSON.stringify(item.context)}`); await session.waitForIdle(); }
         catch (error) { if (!done && record.status === "running") { record.status = "session_error"; record.failure = failureKind(error); } }
         if (record.status === "running") record.status = done ? "completed" : "no_selection";
     } finally { clearTimeout(timer); unsubscribe(); session.dispose(); }
-    return record;
+    return { ...record, ...(native ? { piJev: { ...native.diagnostics } } : {}) };
+    } finally { native?.cleanup(); }
 }
 export type ProbeResult = Awaited<ReturnType<typeof probeDecision>>;
 export function summarizeProbe(rows: ProbeResult[]) {

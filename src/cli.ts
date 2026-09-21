@@ -8,7 +8,8 @@ import { report } from "./report.ts";
 import { compareRetrieval } from "./retrieval.ts";
 import { SIEVE_CONFIG } from "./fixtures.ts";
 import { runScoringBatch } from "./scoring-batch.ts";
-import { runDecisionProbe } from "./decision-probe.ts";
+import { runDecisionProbe, summarizeProbe } from "./decision-probe.ts";
+import { PI_JEV_EXPERIMENT, reportPiJev, runPiJevBatch } from "./pi-jev-batch.ts";
 export async function sourceHash(): Promise<string> { const hash = createHash("sha256"); for (const path of ["package-lock.json", ...(await readdir("src")).filter(x => x.endsWith(".ts")).sort().map(x => `src/${x}`)])
     hash.update(path + "\0").update(await readFile(path)); return hash.digest("hex"); }
 async function exists(path: string) { try {
@@ -22,10 +23,10 @@ catch (error) {
 } }
 async function main(): Promise<void> {
     const [command, ...args] = process.argv.slice(2);
-    if (command === "probe") {
+    if (command === "probe" || command === "probe-pi-jev") {
         const batch = args[0];
         if (!batch || !/^[a-z0-9][a-z0-9-]*$/.test(batch)) throw new Error("Provide a batch identifier.");
-        await runDecisionProbe(batch, await sourceHash(), execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim());
+        await (command === "probe" ? runDecisionProbe : runPiJevBatch)(batch, await sourceHash(), execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim());
         return;
     }
     if (command === "score") {
@@ -39,8 +40,16 @@ async function main(): Promise<void> {
         const batch = args[0];
         if (!batch || !/^[a-z0-9][a-z0-9-]*$/.test(batch))
             throw new Error("Provide a batch identifier.");
-        await report(join("reports", batch));
-        console.log(`Report generated: reports/${batch}/README.md`);
+        const directory = join("reports", batch), manifest = JSON.parse(await readFile(join(directory, "manifest.json"), "utf8"));
+        if (manifest.experiment === PI_JEV_EXPERIMENT) await reportPiJev(directory);
+        else if (manifest.experiment === "reused-profile-decision-probe-v0.5") {
+            const rows = (await readFile(join(directory, "runs.jsonl"), "utf8")).trim().split("\n").map(line => JSON.parse(line));
+            await atomicJson(join(directory, "summary.json"), summarizeProbe(rows));
+        } else if (manifest.experiment?.includes("command-")) {
+            // Archived workflow versions have different scoring contracts; preserve their frozen summaries.
+            JSON.parse(await readFile(join(directory, "summary.json"), "utf8"));
+        } else await report(directory);
+        console.log(`Saved report verified: ${directory}`);
         return;
     }
     if (command === "compare") {
@@ -51,7 +60,7 @@ async function main(): Promise<void> {
         return;
     }
     if (command !== "pilot" && command !== "run")
-        throw new Error("Use probe, score, compare, pilot, run, or report.");
+        throw new Error("Use probe-pi-jev, probe, score, compare, pilot, run, or report.");
     const kind = command === "pilot" ? "pilot" : "formal";
     if (kind === "formal" && !args.includes("--confirmed"))
         throw new Error("Formal execution requires user confirmation after the pilot. Pass --confirmed only after receiving it.");
