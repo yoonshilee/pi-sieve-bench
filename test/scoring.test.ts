@@ -74,11 +74,14 @@ test("scoring pairs preserve inputs and tools, measure real SDK calls, and rejec
     assert.equal(summary.runs[0].jevInput, null);
     assert(summary.runs.every(run => run.validComparison));
     const noDelegation = structuredClone(rows);
-    for (const stage of noDelegation[1].stages) stage.scoring = [];
+    for (const stage of noDelegation[1].stages) {
+        stage.scoring = [];
+        stage.jev = { requests: 0, inputTokens: null, outputTokens: null };
+    }
     const adaptive = scoringSummary(noDelegation);
     assert(adaptive.runs[1].validComparison);
     assert.equal(adaptive.runs[1].decisionsDelegated, 0);
-    for (const failure of ["failed-task", "timeout", "wrong-selection", "no-execution", "wrong-command", "preselected-command"]) {
+    for (const failure of ["failed-task", "timeout", "wrong-selection", "no-execution", "wrong-command", "preselected-command", "missing-call-record"]) {
         const invalid = structuredClone(rows);
         const stage = invalid[1].stages[0];
         if (failure === "failed-task") invalid[1].success = false;
@@ -87,6 +90,7 @@ test("scoring pairs preserve inputs and tools, measure real SDK calls, and rejec
         if (failure === "no-execution") stage.scoring![0].executionCompleted = false;
         if (failure === "preselected-command") stage.scoring![0].commandGeneratedAfterResponse = false;
         if (failure === "wrong-command") stage.scoring![0].nextCommandMatched = false;
+        if (failure === "missing-call-record") stage.scoring = [];
         assert.equal(scoringSummary(invalid).matchedSuccessPairs, 0, failure);
     }
     assert.deepEqual(scoringSchedule().map(item => item.arm), ["score-self", "score-jev", "score-jev", "score-self", "score-self", "score-jev"]);

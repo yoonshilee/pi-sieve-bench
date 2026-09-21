@@ -13,7 +13,8 @@ export function scoringSummary(rows: Run[]) {
         for (const stage of run.stages) addUsage(usage, stage.usage);
         const selections = run.stages.flatMap(stage => stage.scoring ?? []);
         const validDecisions = run.stages.length === 5 && (run.arm === "score-self" || run.stages.every(stage => (stage.scoring ?? []).every(call => call.selectionValid && call.nextCommandMatched && call.commandGeneratedAfterResponse && call.executionCompleted)));
-        const validScoring = run.arm === "score-self" ? selections.length === 0 : run.stages.length === 5 && run.stages.every(stage => (stage.scoring ?? []).every(call => call.reason === "none"));
+        const validScoring = run.stages.every(stage => stage.jev.requests === (stage.scoring ?? []).length) &&
+            (run.arm === "score-self" ? selections.length === 0 : run.stages.length === 5 && run.stages.every(stage => (stage.scoring ?? []).every(call => call.reason === "none")));
         const jevTokens = (field: "inputTokens" | "outputTokens") => {
             const values = run.stages.flatMap(stage => stage.jev[field] === null ? [] : [stage.jev[field]]);
             return values.length ? values.reduce((sum, value) => sum + value, 0) : null;

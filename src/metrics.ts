@@ -5,7 +5,7 @@ export const RETRIEVAL_ARMS = ["retrieval-local", "retrieval-jev"] as const;
 export const RETRIEVAL_COMMIT = "ba996c7bfceddbee6fa75e03a8f4a323052e8d3c";
 export const RETRIEVAL_MODEL = "gpt-5.6-sol";
 export const SCORING_ARMS = ["score-self", "score-jev"] as const;
-export const SCORING_COMMIT = "5031c1a9fc397eb61710c9075b0e751579f5794c";
+export const SCORING_COMMIT = "e3ecbddf73c5a4b8dc131bd4280714114fc8a19e";
 export type Arm = typeof ARMS[number] | typeof RETRIEVAL_ARMS[number] | typeof SCORING_ARMS[number];
 export const RETRIEVAL_QUERIES = [
     "duplicate payment charges after timeout and retry active idempotency contract",
