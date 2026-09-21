@@ -35,6 +35,18 @@ Durations include selection, the main model, and tool execution; setup and exter
 
 Main-model components are medians; Jev values are sums of available responses. Reasoning is included in output, not added again. Missing usage stays null (shown as N/A); errored requests can leave usage unreported. These are reported token quantities, not a bill. Actual dollar cost is unknown; no subscription-token price is invented.
 
+## Context and selection diagnostics
+
+| Arm | Request bytes | Injected characters | Visible skills / tools | Hidden tools | Jev milliseconds | Recovery calls | Tool errors |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| native | 56047 | 0 | 6 / 10 | 0 | N/A | 0 | 2 |
+| full | 67551 | 8363 | 6 / 10 | 0 | N/A | 0 | 4 |
+| sieve | 55619 | 2653 | 6 / 11 | 0 | 1505 | 0 | 4 |
+| luna-native | 59743 | 0 | 6 / 10 | 0 | N/A | 0 | 0 |
+| luna-sieve | 102758 | 2683 | 6 / 11 | 0 | 1503 | 0 | 1 |
+
+Request bytes and injected characters are medians across model requests; capability counts and Jev latency are medians across recorded stages. Recovery calls and errors are totals. Native has zero temporary reference injection but can read the same references through tools. Bytes and characters are not token counts. Per-stage observations remain in JSONL.
+
 ## Formal-batch estimate
 
 Linear projection: 5.55 hours and 21884772 main-model tokens for 60 workflows (12 times the five-arm payment pilot). Jev: 120 requests, N/A input and N/A output tokens; token projection is unavailable when pilot usage is incomplete. This is not a bound or a bill. Early failures shorten the pilot; other workflows, cache behavior, and Jev availability may change usage substantially. Formal execution requires user confirmation.

@@ -25,6 +25,11 @@ export function summarize(rows: Run[]) {
             stageScores: Array.from({ length: 5 }, (_, index) => runs.reduce((n, r) => { const s = r.stages.find(s => s.stage === index + 1); return n + (s ? stageScore(r, s) : 0); }, 0) / runs.length),
             medianSeconds: median(times), minSeconds: Math.min(...times), maxSeconds: Math.max(...times),
             medianTokens: tokenMedian("totalTokens"), medianInput: tokenMedian("input"), medianOutput: tokenMedian("output"), medianCached: tokenMedian("cacheRead"), medianReasoning: tokenMedian("reasoning"), medianCacheWrite: tokenMedian("cacheWrite"),
+            medianRequestBytes: median(stages.flatMap(s => s.requestBytes)), medianInjectedChars: median(stages.flatMap(s => s.contextChars)),
+            medianVisibleSkills: median(stages.flatMap(s => s.visibleSkills)), medianVisibleTools: median(stages.flatMap(s => s.visibleTools)),
+            medianHiddenTools: median(stages.map(s => typeof s.sieve?.hidden === "number" ? s.sieve.hidden : 0)),
+            jevMedianMs: median(stages.flatMap(s => typeof s.sieve?.elapsedMs === "number" ? [s.sieve.elapsedMs] : [])),
+            recoveries: stages.reduce((n, s) => n + s.recoveries, 0), toolErrors: stages.reduce((n, s) => n + s.toolErrors, 0),
             jevRequests: stages.reduce((n, s) => n + s.jev.requests, 0), jevInputTokens: jevSum("inputTokens"), jevOutputTokens: jevSum("outputTokens"),
             fallbacks: stages.filter(s => s.sieve && s.sieve.reason !== "none").length,
             fallbackReasons: Object.fromEntries([...new Set(stages.flatMap(s => s.sieve && s.sieve.reason !== "none" ? [String(s.sieve.reason)] : []))].map(reason => [reason, stages.filter(s => s.sieve?.reason === reason).length])),
@@ -53,10 +58,11 @@ export async function report(directory: string, plots = true): Promise<void> {
     await mkdir(directory, { recursive: true });
     await writeFile(join(directory, "runs.jsonl"), rows.map(r => JSON.stringify({ ...r, reviewedSuccess: isSuccessful(r) })).join("\n") + "\n");
     await writeFile(join(directory, "summary.json"), JSON.stringify(summary, null, 2) + "\n");
-    const fields = ["run", "workflow", "arm", "repeat", "status", "rawSuccess", "reviewedSuccess", "rawScore", "reviewedScore", "seconds", "input", "output", "cacheRead", "cacheWrite", "reasoning", "totalTokens", "jevRequests"];
+    const fields = ["run", "workflow", "arm", "repeat", "status", "rawSuccess", "reviewedSuccess", "rawScore", "reviewedScore", "seconds", "input", "output", "cacheRead", "cacheWrite", "reasoning", "totalTokens", "jevRequests", "initMs", "gradeMs", "medianRequestBytes", "medianInjectedChars", "medianVisibleSkills", "medianVisibleTools", "medianHiddenTools", "jevMedianMs", "recoveries", "toolErrors"];
     const csv = [fields.join(","), ...rows.map(r => {
         const u = emptyUsage(); for (const s of r.stages) addUsage(u, s.usage);
-        return [r.id, r.workflow, r.arm, r.repeat, r.status, r.success, isSuccessful(r), score(r, false), score(r), r.elapsedMs / 1000, u.input, u.output, u.cacheRead, u.cacheWrite, u.reasoning, u.totalTokens, r.stages.reduce((n, s) => n + s.jev.requests, 0)].join(",");
+        const g = summarize([r]).groups[0];
+        return [r.id, r.workflow, r.arm, r.repeat, r.status, r.success, isSuccessful(r), score(r, false), score(r), r.elapsedMs / 1000, u.input, u.output, u.cacheRead, u.cacheWrite, u.reasoning, u.totalTokens, r.stages.reduce((n, s) => n + s.jev.requests, 0), r.initMs, r.gradeMs, g.medianRequestBytes, g.medianInjectedChars, g.medianVisibleSkills, g.medianVisibleTools, g.medianHiddenTools, g.jevMedianMs, g.recoveries, g.toolErrors].join(",");
     })].join("\n") + "\n";
     await writeFile(join(directory, "runs.csv"), csv);
     let markdown = `# ${summary.kind === "pilot" ? "Pilot observations — not a performance conclusion" : "Workflow benchmark results"}\n\nModels: gpt-6-astra and gpt-5.6-luna, medium. Pi: 0.86.1. Jev: 1.13.0. Sieve: 7d54c8f.\n\nRun dates (UTC): ${rows.map(r => r.startedAt.slice(0, 10)).filter((v, i, a) => a.indexOf(v) === i).join(", ")}. See the [frozen manifest](manifest.json) for settings and source identity.\n\n`;
@@ -78,6 +84,10 @@ export async function report(directory: string, plots = true): Promise<void> {
     for (const g of summary.groups)
         markdown += `| ${g.arm} | ${format(g.medianInput)} | ${format(g.medianCached)} | ${format(g.medianOutput)} | ${format(g.medianReasoning)} | ${format(g.jevInputTokens)} / ${format(g.jevOutputTokens)} |\n`;
     markdown += "\nMain-model components are medians; Jev values are sums of available responses. Reasoning is included in output, not added again. Missing usage stays null (shown as N/A); errored requests can leave usage unreported. These are reported token quantities, not a bill. Actual dollar cost is unknown; no subscription-token price is invented.\n";
+    markdown += "\n## Context and selection diagnostics\n\n| Arm | Request bytes | Injected characters | Visible skills / tools | Hidden tools | Jev milliseconds | Recovery calls | Tool errors |\n| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n";
+    for (const g of summary.groups)
+        markdown += `| ${g.arm} | ${format(g.medianRequestBytes)} | ${format(g.medianInjectedChars)} | ${format(g.medianVisibleSkills)} / ${format(g.medianVisibleTools)} | ${format(g.medianHiddenTools)} | ${format(g.jevMedianMs)} | ${g.recoveries} | ${g.toolErrors} |\n`;
+    markdown += "\nRequest bytes and injected characters are medians across model requests; capability counts and Jev latency are medians across recorded stages. Recovery calls and errors are totals. Native has zero temporary reference injection but can read the same references through tools. Bytes and characters are not token counts. Per-stage observations remain in JSONL.\n";
     if (summary.projection)
         markdown += `\n## Formal-batch estimate\n\nLinear projection: ${format(summary.projection.seconds / 3600, 2)} hours and ${format(summary.projection.totalTokens)} main-model tokens for 60 workflows (12 times the five-arm payment pilot). Jev: ${summary.projection.jevRequests} requests, ${format(summary.projection.jevInputTokens)} input and ${format(summary.projection.jevOutputTokens)} output tokens; token projection is unavailable when pilot usage is incomplete. This is not a bound or a bill. Early failures shorten the pilot; other workflows, cache behavior, and Jev availability may change usage substantially. Formal execution requires user confirmation.\n`;
     markdown += "\n## Outcomes and failures\n\n";

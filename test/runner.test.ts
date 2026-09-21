@@ -81,6 +81,9 @@ test("real SDK preserves shared inputs, selection boundaries, and all five stage
     assert(!JSON.stringify(requests).includes(temporary));
     const summaries = summarize(rows);
     assert.equal(summaries.groups.length, 5);
+    assert.equal(summaries.groups.find(g=>g.arm==="native")?.medianInjectedChars,0);
+    assert(summaries.groups.find(g=>g.arm==="full")!.medianInjectedChars! > 0);
+    assert(summaries.groups.find(g=>g.arm==="sieve")!.jevMedianMs! >= 25);
     assert.deepEqual(summaries.totals.jevUsage, {inputTokens:1000,outputTokens:200,complete:true});
     const pilot = rows.map(r => ({...r,kind:"pilot" as const}));
     assert.equal(summarize(pilot).projection?.jevRequests,120);
