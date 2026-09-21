@@ -1,0 +1,55 @@
+{
+  "experiment": "caller-defined-command-scoring-v0.3",
+  "batch": "score-20260921-sol-v03-fixed",
+  "createdAt": "2026-09-21T11:22:25.040Z",
+  "sourceHash": "d19ce0e4108141fc35a63a7e8202ec7d7192e90393519be9935c5faf0b362e7e",
+  "harnessCommit": "cc9bc226c3966baecd1cbd977ac3f017bc6fca7e",
+  "sieveCommit": "2632a4f3275be31b99dd979f1bc9858f6f8406c4",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "sieve": "2632a4f3275be31b99dd979f1bc9858f6f8406c4"
+  },
+  "sieveConfig": {
+    "timeoutMs": 10000
+  },
+  "limits": {
+    "stageMs": 300000,
+    "modelRequests": 30
+  },
+  "schedule": [
+    {
+      "repeat": 1,
+      "arm": "score-self"
+    },
+    {
+      "repeat": 1,
+      "arm": "score-jev"
+    },
+    {
+      "repeat": 2,
+      "arm": "score-jev"
+    },
+    {
+      "repeat": 2,
+      "arm": "score-self"
+    },
+    {
+      "repeat": 3,
+      "arm": "score-self"
+    },
+    {
+      "repeat": 3,
+      "arm": "score-jev"
+    }
+  ],
+  "workflow": "payments",
+  "fixtureRevision": "explicit-nonblank-callback-ids",
+  "node": "v22.23.2",
+  "method": "Each model authors 3-5 command candidates and a shared rubric once per stage, then scores itself or calls real sieve_score. Both record and execute their chosen command. Candidate sets may differ. Five continuous stages per run; no grading feedback. No selective reruns.",
+  "cachePolicy": "Serial alternating pair order; native server caches cannot be cleared. Three repeats do not establish statistical significance.",
+  "publication": "Local only. No charts or public performance report."
+}

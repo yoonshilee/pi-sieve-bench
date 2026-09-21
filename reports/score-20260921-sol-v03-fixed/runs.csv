@@ -1,0 +1,7 @@
+id,arm,repeat,status,success,seconds,requests,input,cachedInput,output,reasoning,totalTokens,jevRequests,jevInput,jevOutput,validComparison
+payments-1-score-self,score-self,1,provider_error,false,562.34,40,59218,649088,18655,7167,726961,0,,,false
+payments-1-score-jev,score-jev,1,completed,true,649.404,48,55366,952064,20461,6411,1027891,5,6376,300,false
+payments-2-score-jev,score-jev,2,completed,true,652.798,53,103422,1025792,21796,6976,1151010,5,5974,300,false
+payments-2-score-self,score-self,2,completed,true,421.227,39,67447,640256,15786,5125,723489,0,,,true
+payments-3-score-self,score-self,3,provider_error,false,463.916,19,19054,141952,8363,3312,169369,0,,,false
+payments-3-score-jev,score-jev,3,completed,true,793.699,50,43942,971264,20889,6491,1036095,5,6583,300,false

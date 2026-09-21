@@ -1,0 +1,295 @@
+{
+  "id": "payments-3-score-self",
+  "batch": "score-20260921-sol-v03-fixed",
+  "kind": "pilot",
+  "workflow": "payments",
+  "arm": "score-self",
+  "repeat": 3,
+  "startedAt": "2026-09-21T12:00:34.030Z",
+  "status": "provider_error",
+  "success": false,
+  "initialHash": "0b6c505c84bfbca77ec59c60b22f4c9e0b75e45cee80cba3f2c5ae34b2c4d54b",
+  "fixtureHash": "d19ce0e4108141fc35a63a7e8202ec7d7192e90393519be9935c5faf0b362e7e",
+  "harnessCommit": "cc9bc226c3966baecd1cbd977ac3f017bc6fca7e",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "thinking": "medium",
+    "jev": "jev-1.13.0",
+    "sieve": "2632a4f3275be31b99dd979f1bc9858f6f8406c4"
+  },
+  "node": "v22.23.2",
+  "initMs": 19,
+  "elapsedMs": 463916,
+  "gradeMs": 1892,
+  "stages": [
+    {
+      "stage": 1,
+      "status": "completed",
+      "elapsedMs": 111132,
+      "gradeMs": 115,
+      "checks": [
+        {
+          "id": "diagnosis",
+          "passed": true
+        },
+        {
+          "id": "reproduction-script",
+          "passed": true
+        },
+        {
+          "id": "bug-observed-without-premature-fix",
+          "passed": true
+        }
+      ],
+      "requests": 9,
+      "requestBytes": [
+        16250,
+        26426,
+        31287,
+        36046,
+        36610,
+        41764,
+        42083,
+        44792,
+        47748
+      ],
+      "contextChars": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleSkills": [
+        6
+      ],
+      "visibleTools": [
+        11
+      ],
+      "toolCalls": 20,
+      "toolErrors": 1,
+      "recoveries": 0,
+      "usage": {
+        "input": 8666,
+        "output": 2258,
+        "cacheRead": 45824,
+        "cacheWrite": 0,
+        "reasoning": 755,
+        "totalTokens": 56748
+      },
+      "jev": {
+        "requests": 0,
+        "inputTokens": null,
+        "outputTokens": null
+      },
+      "sieve": {
+        "enabled": false,
+        "reason": "disabled"
+      },
+      "answer": "Completed investigation without modifying production code.\n\nCreated:\n- `scripts/reproduce.ts` — simulates a successful charge followed by a timeout and retry.\n- `diagnosis.json` — records duplicate-charge diagnosis with `observedCharges: 2`.\n- `decision-1.json` — records the required command comparison.\n\nResults:\n- Reproduction output: `{\"charges\":2}`\n- Existing tests: 1 passed\n- JSON files validated successfully.",
+      "scoring": [],
+      "decision": {
+        "valid": true,
+        "executedSelection": true,
+        "options": 4,
+        "levels": 4,
+        "selectedId": "baseline-tests",
+        "selectedScore": 3,
+        "inputHash": "ce7faceebf001c0622832f4ec0d03f4d4dfa78ecb76064b63be5bb7b3a9254b9",
+        "scoringAvailable": false
+      }
+    },
+    {
+      "stage": 2,
+      "status": "completed",
+      "elapsedMs": 169163,
+      "gradeMs": 120,
+      "checks": [
+        {
+          "id": "same-key-single-charge",
+          "passed": true
+        },
+        {
+          "id": "conflicting-amount",
+          "passed": true
+        },
+        {
+          "id": "conflicting-customer",
+          "passed": true
+        },
+        {
+          "id": "invalid-request-no-charge",
+          "passed": true
+        },
+        {
+          "id": "retry-after-gateway-failure",
+          "passed": true
+        },
+        {
+          "id": "store-isolation",
+          "passed": true
+        }
+      ],
+      "requests": 7,
+      "requestBytes": [
+        52042,
+        62172,
+        67547,
+        67866,
+        80640,
+        87793,
+        90894
+      ],
+      "contextChars": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "visibleSkills": [
+        6
+      ],
+      "visibleTools": [
+        11
+      ],
+      "toolCalls": 17,
+      "toolErrors": 0,
+      "recoveries": 0,
+      "usage": {
+        "input": 6895,
+        "output": 4743,
+        "cacheRead": 68608,
+        "cacheWrite": 0,
+        "reasoning": 2112,
+        "totalTokens": 80246
+      },
+      "jev": {
+        "requests": 0,
+        "inputTokens": null,
+        "outputTokens": null
+      },
+      "sieve": {
+        "enabled": false,
+        "reason": "disabled"
+      },
+      "answer": "Implemented sequential payment idempotency in `src/payments.ts`:\n\n- Validates requests before gateway access.\n- Returns the original charge object for identical retries.\n- Rejects key conflicts with `KEY_CONFLICT`.\n- Preserves untrimmed identifiers.\n- Allows retries after failed gateway calls.\n- Keeps payment keys scoped per store.\n- Preserves existing exports.\n\nAdded focused coverage in `test/public.test.ts`.\n\nVerification: `7/7` tests pass with `node --test test/*.test.ts`.",
+      "scoring": [],
+      "decision": {
+        "valid": true,
+        "executedSelection": true,
+        "options": 4,
+        "levels": 4,
+        "selectedId": "reproduce-retry",
+        "selectedScore": 3,
+        "inputHash": "b7f47a2db86fbaecf066c4c2f3356a9dbaf91e76816fe58106a8f7bbec9c67b0",
+        "scoringAvailable": false
+      }
+    },
+    {
+      "stage": 3,
+      "status": "provider_error",
+      "elapsedMs": 183621,
+      "gradeMs": 1657,
+      "checks": [
+        {
+          "id": "same-key-single-charge",
+          "passed": true
+        },
+        {
+          "id": "conflicting-amount",
+          "passed": true
+        },
+        {
+          "id": "conflicting-customer",
+          "passed": true
+        },
+        {
+          "id": "invalid-request-no-charge",
+          "passed": true
+        },
+        {
+          "id": "retry-after-gateway-failure",
+          "passed": true
+        },
+        {
+          "id": "store-isolation",
+          "passed": true
+        },
+        {
+          "id": "twenty-overlapping-retries",
+          "passed": false
+        },
+        {
+          "id": "inflight-conflict",
+          "passed": false
+        },
+        {
+          "id": "different-keys-not-serialized",
+          "passed": true
+        },
+        {
+          "id": "shared-failure-can-retry",
+          "passed": false
+        }
+      ],
+      "requests": 3,
+      "requestBytes": [
+        101294,
+        113474,
+        119850
+      ],
+      "contextChars": [
+        0,
+        0,
+        0
+      ],
+      "visibleSkills": [
+        6
+      ],
+      "visibleTools": [
+        11
+      ],
+      "toolCalls": 10,
+      "toolErrors": 0,
+      "recoveries": 0,
+      "usage": {
+        "input": 3493,
+        "output": 1362,
+        "cacheRead": 27520,
+        "cacheWrite": 0,
+        "reasoning": 445,
+        "totalTokens": 32375
+      },
+      "jev": {
+        "requests": 0,
+        "inputTokens": null,
+        "outputTokens": null
+      },
+      "sieve": {
+        "enabled": false,
+        "reason": "disabled"
+      },
+      "answer": "",
+      "scoring": [],
+      "decision": {
+        "valid": true,
+        "executedSelection": false,
+        "options": 4,
+        "levels": 4,
+        "selectedId": "concurrency-probe",
+        "selectedScore": 3,
+        "inputHash": "b29b3a79d86bc0349076ac5f25a6b028a0719722908d128b7bbe53580d51542f",
+        "scoringAvailable": false
+      }
+    }
+  ]
+}
