@@ -1,22 +1,93 @@
 # Pi Sieve Bench
 
-A public, reproducible comparison of Native Pi, full reference injection, and
-[Pi Sieve](https://github.com/yoonshilee/pi-sieve) on five-stage development workflows.
+A public collection of workflow and semantic-component comparisons for
+[Pi Sieve](https://github.com/yoonshilee/pi-sieve).
 All projects and reference data are fictional. This repository contains no shared
 credentials. Live runs consume the operator's own model and TypeSafe allowance.
 
 This repository contains the complete experimental setup, results, failure
-analysis, and sanitized run data. Historical visualizations remain here as archived diagnostics. **Only pilot data is available; no formal batch
-has been run.** The latest pair evaluates v0.2 on-demand retrieval at `ba996c7`.
-Earlier five-arm pilots evaluate historical v0.1 context filtering at `7d54c8f`;
-their results are kept separate.
+analysis, and sanitized run data. **All results are exploratory; the planned formal
+long-workflow batch has not been run.** The latest experiment evaluates v0.6
+semantic inspection at `7388f9f`. Earlier decision, retrieval, and five-arm context
+filtering experiments retain their original protocols and are kept separate.
+Historical visualizations remain archived diagnostics.
 
-[Retrieval comparison](#on-demand-retrieval-comparison) · [Historical setup](#historical-five-arm-experiment) · [Results](#results) · [Reproduction](#setup-and-commands)
+[Latest semantic comparison](#semantic-observation-comparison-v06) · [Native pi-jev comparison](#native-pi-jev-comparison) · [Historical setup](#historical-five-arm-experiment) · [Reproduction](#setup-and-commands)
 
 New on-demand experiments use **openai-codex/gpt-5.6-sol, medium**. Saved Astra
 and Luna measurements retain their original model identities. Changing the model
 requires a new batch ID. Earlier experiments are archival diagnostics, excluded
-from future release performance claims. Report and chart updates are deferred.
+from future release performance claims. Publishing the saved results does not
+establish a speed or cost benefit. No new charts or live runs accompany publication.
+Frozen manifests retain their execution-time publication policy; the saved code
+and sanitized results were subsequently approved for GitHub publication.
+
+## Semantic observation comparison (v0.6)
+
+The latest experiment compares two modes of the same `sieve_inspect` tool. In
+**Main interpretation**, the tool returns raw observations and Sol labels them.
+In **Jev inspection**, the tool sends one Choice batch and Sol forwards its labels
+unchanged. Both modes use identical files, prompts, label criteria, permissions,
+and fixed tool definitions. Neither mode changes earlier messages or capabilities.
+
+Pi is pinned to 0.86.1, the main model to `openai-codex/gpt-5.6-sol` with medium
+reasoning, and Jev to `jev-1.13.0`. The measured plugin commit is `7388f9f` and
+the harness commit is `f4559a2`. Two fictional workflows each contain three
+sequential batches of eight observations. Three alternating, serial repetitions
+per arm yield **12 runs, 36 stages, and 288 judgments over 48 distinct cases**.
+Each run has a fresh session, retained across its three stages. Reference labels
+stay outside the model workspace; failures remain in the saved results.
+
+| Workflow | Arm | Strict run success | Label agreement | Median seconds (range) | Main requests | Main total tokens |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Operation outcomes | Main interpretation | 3/3 | 72/72 | 28.50 (23.47–28.93) | 18 | 31,668 |
+| Operation outcomes | Jev inspection | 3/3 | 72/72 | 28.13 (26.45–29.12) | 18 | 25,270 |
+| Evidence relationships | Main interpretation | 3/3 | 72/72 | 30.71 (28.06–34.08) | 18 | 32,092 |
+| Evidence relationships | Jev inspection | 0/3 | 69/72 | 28.64 (25.35–30.95) | 18 | 25,458 |
+
+Strict success requires all 24 labels in a run to match. Token and request counts
+are totals across three runs, including cached input. Main-model tokens fell
+from **63,760 to 50,728 (20.4%)**, while Jev added **42,105 input and 7,149 output
+tokens**. Actual charges are unknown, so this is not evidence of monetary savings.
+Both arms still used two main-model requests per stage. Outcome paired speedup
+was only **1.013x (n=3)**, with mixed per-repeat results and a 3.5% increase in
+aggregate time. Evidence has no strictly successful matched timing pairs.
+**No stable latency benefit was established.**
+
+All three evidence disagreements concern the same tutorial observation:
+`unrelated` in the reference versus Jev's `insufficient`. The rubric leaves the
+subject boundary ambiguous; strict scores remain unchanged. No erroneous support
+or contradiction label occurred. All 18 real Jev calls completed without fallback
+under a **10-second experimental timeout**. One took 2.561 seconds, exceeding the
+unchanged 1.5-second production default. Earlier message prefixes and fixed request
+settings remained unchanged in observed sessions; provider cache behavior is not
+fully controlled.
+
+This measures a semantic component, not completed coding work. Observation-file
+production and rubric authoring are excluded. Small authored cases, repeated
+inputs, a single main model, label ambiguity, and provider variability limit
+generalization. Time includes the prompt, tool invocation, Jev, and final response;
+initialization and independent grading are separate. Limits are 90 seconds and
+three main requests per stage, with no automatic retries or selective reruns.
+
+Read the [full method and failure analysis](reports/semantic-probe-20260922-sol/analysis.md).
+Saved data: [manifest](reports/semantic-probe-20260922-sol/manifest.json),
+[per-run JSONL](reports/semantic-probe-20260922-sol/runs.jsonl),
+[stage CSV](reports/semantic-probe-20260922-sol/stages.csv),
+[summary](reports/semantic-probe-20260922-sol/summary.json), and
+[integrity audit](reports/semantic-probe-20260922-sol/audit.json).
+
+```sh
+# Regenerate the published report offline; no model credentials are needed.
+npm run report -- semantic-probe-20260922-sol
+# Start a new live batch only after configuring Pi credentials and ../pi-sieve.
+npm run probe:semantic -- semantic-probe-new-001
+```
+
+Keep a clean Sieve checkout beside this repository. The harness records both
+commits and its source fingerprint; resume preserves existing attempts. Use the
+recorded commits to reproduce the measured implementation. Offline CI checks the
+real Pi SDK with mocked responses; those tests are not live performance evidence.
 
 ## Native pi-jev comparison
 
@@ -56,7 +127,7 @@ their data hash. All failed and interrupted attempts remain; resume never repeat
 them. `npm run report -- <batch>` generates JSON/CSV offline without charts or
 model calls. Comparisons require correct, protocol-valid matched cases; missing
 usage stays null, reasoning is a subset of output, and actual dollar cost remains
-unknown. Results remain local and do not support release performance claims.
+unknown. Published results are archival diagnostics, not release performance claims.
 
 ## Reused-profile decision probe (v0.5)
 
@@ -102,8 +173,8 @@ npm run probe -- profile-probe-local-001
 Keep the exact clean plugin commit pinned by `SCORING_COMMIT` adjacent at
 `../pi-sieve`. Native Pi credentials resolve normally. Results and the frozen
 manifest go to `reports/<batch>/`; resumption preserves all existing attempts,
-including failed or interrupted ones. Changes and results stay local, without
-charts or public performance claims.
+including failed or interrupted ones. Published results preserve the original
+protocol and do not establish a release performance claim.
 
 ## Adaptive workflow comparison (v0.5)
 

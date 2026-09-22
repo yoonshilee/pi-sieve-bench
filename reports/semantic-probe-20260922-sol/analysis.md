@@ -1,6 +1,9 @@
 # Semantic observation comparison
 
-Local exploratory experiment. No public performance claim, chart, push, or release.
+Exploratory experiment, originally run locally and subsequently approved for
+GitHub publication with sanitized results. No established performance claim or
+new chart accompanies publication. The frozen manifest retains the publication
+policy that applied when the experiment was executed.
 
 ## Frozen method
 
@@ -59,12 +62,12 @@ separate from main-model tokens. Actual monetary charges are unknown.
 ## Reproduction
 
 Use the local Sieve checkout at the exact commit in `manifest.json`, alongside
-this repository. These commits have not been pushed. With Pi credentials already
-configured, run:
+this repository. Both recorded commits are available in their GitHub histories.
+With Pi credentials already configured, use a new batch name for a live rerun:
 
 ```sh
 npm run check
-npm run probe:semantic -- semantic-probe-20260922-sol
+npm run probe:semantic -- semantic-probe-new-001
 npm run report -- semantic-probe-20260922-sol
 ```
 
@@ -83,7 +86,7 @@ Cases are balanced across labels and have not been independently human-adjudicat
 No performance conclusion transfers automatically to arbitrary logs, longer
 histories, another model, the production deadline, or open-ended planning.
 
-Post-run results and failure analysis will be added below without changing the
+The post-run results and failure analysis below do not change the
 frozen tasks, reference labels, protocol, or implementation.
 
 ## Observed results
