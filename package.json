@@ -10,6 +10,7 @@
   },
   "scripts": {
     "probe": "node src/cli.ts probe",
+    "probe:semantic": "node src/cli.ts probe-semantic",
     "score": "node src/cli.ts score",
     "compare": "node src/cli.ts compare",
     "pilot": "node src/cli.ts pilot",

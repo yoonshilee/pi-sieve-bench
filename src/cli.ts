@@ -10,6 +10,7 @@ import { SIEVE_CONFIG } from "./fixtures.ts";
 import { runScoringBatch } from "./scoring-batch.ts";
 import { runDecisionProbe, summarizeProbe } from "./decision-probe.ts";
 import { PI_JEV_EXPERIMENT, reportPiJev, runPiJevBatch } from "./pi-jev-batch.ts";
+import { SEMANTIC_EXPERIMENT, reportSemantic, runSemanticBatch } from "./semantic-probe.ts";
 export async function sourceHash(): Promise<string> { const hash = createHash("sha256"); for (const path of ["package-lock.json", ...(await readdir("src")).filter(x => x.endsWith(".ts")).sort().map(x => `src/${x}`)])
     hash.update(path + "\0").update(await readFile(path)); return hash.digest("hex"); }
 async function exists(path: string) { try {
@@ -23,10 +24,10 @@ catch (error) {
 } }
 async function main(): Promise<void> {
     const [command, ...args] = process.argv.slice(2);
-    if (command === "probe" || command === "probe-pi-jev") {
+    if (command === "probe" || command === "probe-pi-jev" || command === "probe-semantic") {
         const batch = args[0];
         if (!batch || !/^[a-z0-9][a-z0-9-]*$/.test(batch)) throw new Error("Provide a batch identifier.");
-        await (command === "probe" ? runDecisionProbe : runPiJevBatch)(batch, await sourceHash(), execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim());
+        await (command === "probe" ? runDecisionProbe : command === "probe-semantic" ? runSemanticBatch : runPiJevBatch)(batch, await sourceHash(), execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim());
         return;
     }
     if (command === "score") {
@@ -41,7 +42,8 @@ async function main(): Promise<void> {
         if (!batch || !/^[a-z0-9][a-z0-9-]*$/.test(batch))
             throw new Error("Provide a batch identifier.");
         const directory = join("reports", batch), manifest = JSON.parse(await readFile(join(directory, "manifest.json"), "utf8"));
-        if (manifest.experiment === PI_JEV_EXPERIMENT) await reportPiJev(directory);
+        if (manifest.experiment === SEMANTIC_EXPERIMENT) await reportSemantic(directory);
+        else if (manifest.experiment === PI_JEV_EXPERIMENT) await reportPiJev(directory);
         else if (manifest.experiment === "reused-profile-decision-probe-v0.5") {
             const rows = (await readFile(join(directory, "runs.jsonl"), "utf8")).trim().split("\n").map(line => JSON.parse(line));
             await atomicJson(join(directory, "summary.json"), summarizeProbe(rows));
@@ -60,7 +62,7 @@ async function main(): Promise<void> {
         return;
     }
     if (command !== "pilot" && command !== "run")
-        throw new Error("Use probe-pi-jev, probe, score, compare, pilot, run, or report.");
+        throw new Error("Use probe-semantic, probe-pi-jev, probe, score, compare, pilot, run, or report.");
     const kind = command === "pilot" ? "pilot" : "formal";
     if (kind === "formal" && !args.includes("--confirmed"))
         throw new Error("Formal execution requires user confirmation after the pilot. Pass --confirmed only after receiving it.");
