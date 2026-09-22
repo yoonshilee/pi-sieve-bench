@@ -54,7 +54,7 @@ test("the actual Pi SDK preserves session prefixes and equal tool interfaces for
         const auth = join(root, `auth-${workflow.id}-${arm}`);
         await mkdir(auth);
         const runtime = await ModelRuntime.create({ authPath: join(auth, "auth.json"), modelsPath: null, modelsStorePath: join(auth, "models.json"), refreshOnCreate: false });
-        runtime.setRuntimeApiKey("typesafe", "fixture-only");
+        await runtime.setRuntimeApiKey("typesafe", "fixture-only");
         const faux = fauxProvider({ provider: VERSIONS.provider, models: [{ id: RETRIEVAL_MODEL, reasoning: true }], tokensPerSecond: Infinity });
         runtime.registerNativeProvider(faux.provider);
         let previous: Context["messages"] = [];

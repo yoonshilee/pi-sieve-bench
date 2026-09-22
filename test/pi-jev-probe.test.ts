@@ -34,7 +34,7 @@ test("the pinned native extension runs both decision modes through the real Pi S
     const fetchBefore = globalThis.fetch;
     for (mode of PI_JEV_MODES) {
         const runtime = await ModelRuntime.create({ authPath: join(root, `${mode}-auth.json`), modelsPath: null, modelsStorePath: join(root, `${mode}-models.json`), refreshOnCreate: false });
-        runtime.setRuntimeApiKey("typesafe", "fixture-only");
+        await runtime.setRuntimeApiKey("typesafe", "fixture-only");
         const faux = fauxProvider({ provider: VERSIONS.provider, models: [{ id: RETRIEVAL_MODEL, reasoning: true }], tokensPerSecond: Infinity });
         runtime.registerNativeProvider(faux.provider);
         faux.setResponses([
@@ -72,7 +72,8 @@ test("the observer rejects changed inputs, extra requests, and malformed service
     const root = await mkdtemp(join(tmpdir(), "pi-jev-boundary-"));
     t.after(() => rm(root, { recursive: true, force: true }));
     const runtime = await ModelRuntime.create({ authPath: join(root, "auth.json"), modelsPath: null, modelsStorePath: join(root, "models.json"), refreshOnCreate: false });
-    runtime.setRuntimeApiKey("typesafe", "fixture-only");
+    await runtime.setRuntimeApiKey("typesafe", "fixture-only");
+    assert.deepEqual(runtime.getProviderAuthStatus("typesafe"), { configured: true, source: "runtime" });
     let sent = 0;
     t.mock.method(globalThis, "fetch", async () => { sent++; return Response.json(response("choice", "tests")); });
     const observer = await installPiJevProbe(runtime, "Test context.", "choice");

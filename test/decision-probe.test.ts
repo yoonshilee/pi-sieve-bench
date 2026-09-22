@@ -32,7 +32,7 @@ test("the real SDK probe measures decision handoff, hides labels, and excludes a
     for (const arm of ["direct", "delegated"] as const) {
         const auth = join(root, `${arm}-auth`); await mkdir(auth);
         const runtime = await ModelRuntime.create({ authPath: join(auth, "auth.json"), modelsPath: null, modelsStorePath: join(auth, "models.json"), refreshOnCreate: false });
-        runtime.setRuntimeApiKey("typesafe", "fixture-only");
+        await runtime.setRuntimeApiKey("typesafe", "fixture-only");
         const faux = fauxProvider({ provider: VERSIONS.provider, models: [{ id: RETRIEVAL_MODEL, reasoning: true }], tokensPerSecond: Infinity });
         runtime.registerNativeProvider(faux.provider);
         faux.setResponses([
