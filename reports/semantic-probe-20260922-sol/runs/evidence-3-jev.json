@@ -1,0 +1,197 @@
+{
+  "id": "evidence-3-jev",
+  "workflow": "evidence",
+  "repeat": 3,
+  "arm": "jev",
+  "startedAt": "2026-09-22T01:53:17.490Z",
+  "status": "completed",
+  "success": false,
+  "fixtureHash": "7efeb88d578901e7f3f57d36075a59075affb8ad8fd11e3fe6f4eccf8240483c",
+  "initMs": 9,
+  "elapsedMs": 28643,
+  "stages": [
+    {
+      "stage": 1,
+      "status": "completed",
+      "elapsedMs": 9614,
+      "gradeMs": 0,
+      "requests": 2,
+      "assistantMessages": 2,
+      "requestBytes": [
+        5146,
+        6146
+      ],
+      "prefixPreserved": true,
+      "toolDefinitionsStable": true,
+      "inspections": 1,
+      "argumentChars": 38,
+      "resultChars": 606,
+      "protocolValid": true,
+      "outputValid": true,
+      "predictions": {
+        "item-1": "insufficient",
+        "item-2": "supports",
+        "item-3": "unrelated",
+        "item-4": "contradicts",
+        "item-5": "supports",
+        "item-6": "unrelated",
+        "item-7": "contradicts",
+        "item-8": "insufficient"
+      },
+      "correct": 8,
+      "total": 8,
+      "exact": true,
+      "followedJudgments": true,
+      "usage": {
+        "input": 2156,
+        "output": 88,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoning": 0,
+        "totalTokens": 2244
+      },
+      "failure": null,
+      "jev": {
+        "calls": 1,
+        "reason": "none",
+        "elapsedMs": 1298,
+        "requestMatched": true,
+        "inputTokens": 2306,
+        "outputTokens": 417,
+        "predictions": {
+          "item-1": "insufficient",
+          "item-2": "supports",
+          "item-3": "unrelated",
+          "item-4": "contradicts",
+          "item-5": "supports",
+          "item-6": "unrelated",
+          "item-7": "contradicts",
+          "item-8": "insufficient"
+        },
+        "correct": 8
+      }
+    },
+    {
+      "stage": 2,
+      "status": "completed",
+      "elapsedMs": 9258,
+      "gradeMs": 0,
+      "requests": 2,
+      "assistantMessages": 2,
+      "requestBytes": [
+        6720,
+        7698
+      ],
+      "prefixPreserved": true,
+      "toolDefinitionsStable": true,
+      "inspections": 1,
+      "argumentChars": 38,
+      "resultChars": 584,
+      "protocolValid": true,
+      "outputValid": true,
+      "predictions": {
+        "item-1": "contradicts",
+        "item-2": "unrelated",
+        "item-3": "insufficient",
+        "item-4": "supports",
+        "item-5": "unrelated",
+        "item-6": "supports",
+        "item-7": "contradicts",
+        "item-8": "insufficient"
+      },
+      "correct": 8,
+      "total": 8,
+      "exact": true,
+      "followedJudgments": true,
+      "usage": {
+        "input": 566,
+        "output": 88,
+        "cacheRead": 2176,
+        "cacheWrite": 0,
+        "reasoning": 0,
+        "totalTokens": 2830
+      },
+      "failure": null,
+      "jev": {
+        "calls": 1,
+        "reason": "none",
+        "elapsedMs": 1100,
+        "requestMatched": true,
+        "inputTokens": 2291,
+        "outputTokens": 417,
+        "predictions": {
+          "item-1": "contradicts",
+          "item-2": "unrelated",
+          "item-3": "insufficient",
+          "item-4": "supports",
+          "item-5": "unrelated",
+          "item-6": "supports",
+          "item-7": "contradicts",
+          "item-8": "insufficient"
+        },
+        "correct": 8
+      }
+    },
+    {
+      "stage": 3,
+      "status": "completed",
+      "elapsedMs": 9771,
+      "gradeMs": 0,
+      "requests": 2,
+      "assistantMessages": 2,
+      "requestBytes": [
+        8272,
+        9269
+      ],
+      "prefixPreserved": true,
+      "toolDefinitionsStable": true,
+      "inspections": 1,
+      "argumentChars": 38,
+      "resultChars": 603,
+      "protocolValid": true,
+      "outputValid": true,
+      "predictions": {
+        "item-1": "supports",
+        "item-2": "insufficient",
+        "item-3": "contradicts",
+        "item-4": "unrelated",
+        "item-5": "insufficient",
+        "item-6": "supports",
+        "item-7": "insufficient",
+        "item-8": "contradicts"
+      },
+      "correct": 7,
+      "total": 8,
+      "exact": false,
+      "followedJudgments": true,
+      "usage": {
+        "input": 2044,
+        "output": 88,
+        "cacheRead": 1280,
+        "cacheWrite": 0,
+        "reasoning": 0,
+        "totalTokens": 3412
+      },
+      "failure": null,
+      "jev": {
+        "calls": 1,
+        "reason": "none",
+        "elapsedMs": 1023,
+        "requestMatched": true,
+        "inputTokens": 2316,
+        "outputTokens": 418,
+        "predictions": {
+          "item-1": "supports",
+          "item-2": "insufficient",
+          "item-3": "contradicts",
+          "item-4": "unrelated",
+          "item-5": "insufficient",
+          "item-6": "supports",
+          "item-7": "insufficient",
+          "item-8": "contradicts"
+        },
+        "correct": 7
+      }
+    }
+  ]
+}

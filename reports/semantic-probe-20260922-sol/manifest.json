@@ -1,0 +1,85 @@
+{
+  "experiment": "semantic-observation-batches-v0.6",
+  "createdAt": "2026-09-22T01:48:37.510Z",
+  "sourceHash": "a0a9114df980444c513dc8e89fc3beaeb1aa52aea815ecb6aec201c460eae848",
+  "harnessCommit": "f4559a22d86086383fff0f084a48d2ecc3fd877e",
+  "sieveCommit": "7388f9ffc7c9483a2e4b85efd8e463874142e75a",
+  "versions": {
+    "pi": "0.86.1",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "thinking": "medium",
+    "jev": "jev-1.13.0"
+  },
+  "limits": {
+    "stageMs": 90000,
+    "mainRequests": 3,
+    "jevTimeoutMs": 10000
+  },
+  "schedule": [
+    {
+      "workflow": "outcome",
+      "repeat": 1,
+      "arm": "main"
+    },
+    {
+      "workflow": "outcome",
+      "repeat": 1,
+      "arm": "jev"
+    },
+    {
+      "workflow": "evidence",
+      "repeat": 1,
+      "arm": "jev"
+    },
+    {
+      "workflow": "evidence",
+      "repeat": 1,
+      "arm": "main"
+    },
+    {
+      "workflow": "outcome",
+      "repeat": 2,
+      "arm": "jev"
+    },
+    {
+      "workflow": "outcome",
+      "repeat": 2,
+      "arm": "main"
+    },
+    {
+      "workflow": "evidence",
+      "repeat": 2,
+      "arm": "main"
+    },
+    {
+      "workflow": "evidence",
+      "repeat": 2,
+      "arm": "jev"
+    },
+    {
+      "workflow": "outcome",
+      "repeat": 3,
+      "arm": "main"
+    },
+    {
+      "workflow": "outcome",
+      "repeat": 3,
+      "arm": "jev"
+    },
+    {
+      "workflow": "evidence",
+      "repeat": 3,
+      "arm": "jev"
+    },
+    {
+      "workflow": "evidence",
+      "repeat": 3,
+      "arm": "main"
+    }
+  ],
+  "method": "Two fictional workflows, three sequential batches of eight independent observations each, two arms, three repetitions. Same plugin, tool schema, questions, evidence, permissions, prompts, and session history policy. Main arm uses /sieve off behavior to read raw observations; Jev arm returns labels from one real batch request inside that same tool. Main model classifies raw observations or forwards supplied labels unchanged. No extra score handoff round. Independent reference labels remain outside workspaces and prompts. Score exact label agreement, not real coding completion.",
+  "timing": "First prompt through final assistant response per stage, including inspection, Jev, and response generation. Initialization and external grading excluded and recorded. Same session within each run, isolated sessions between runs. Serial rotated arm order. No automatic retry. A 10-second Jev timeout is an explicit diagnostic override of the 1.5-second production default.",
+  "cache": "Record uncached/cache input, output, request bytes, and hashes of prior input messages and fixed request settings. Do not store payloads or reasoning. No cache warming or reset; routing, cache boundaries, history differences, and provider variability remain. Never interpret prefix equality as guaranteed cache hits.",
+  "publication": "Local only; no chart, public README performance claim, push, or release."
+}

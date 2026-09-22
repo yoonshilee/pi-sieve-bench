@@ -1,0 +1,170 @@
+{
+  "id": "outcome-2-main",
+  "workflow": "outcome",
+  "repeat": 2,
+  "arm": "main",
+  "startedAt": "2026-09-22T01:50:58.368Z",
+  "status": "completed",
+  "success": true,
+  "fixtureHash": "fa0a855bd241a434eec13a655ef7d5d2e262b9c565ca1c84f9439c8ee68f7e58",
+  "initMs": 12,
+  "elapsedMs": 28930,
+  "stages": [
+    {
+      "stage": 1,
+      "status": "completed",
+      "elapsedMs": 10004,
+      "gradeMs": 0,
+      "requests": 2,
+      "assistantMessages": 2,
+      "requestBytes": [
+        5193,
+        7439
+      ],
+      "prefixPreserved": true,
+      "toolDefinitionsStable": true,
+      "inspections": 1,
+      "argumentChars": 37,
+      "resultChars": 1869,
+      "protocolValid": true,
+      "outputValid": true,
+      "predictions": {
+        "item-1": "completed",
+        "item-2": "unknown",
+        "item-3": "not_applied",
+        "item-4": "partial",
+        "item-5": "unknown",
+        "item-6": "completed",
+        "item-7": "partial",
+        "item-8": "not_applied"
+      },
+      "correct": 8,
+      "total": 8,
+      "exact": true,
+      "followedJudgments": null,
+      "usage": {
+        "input": 2367,
+        "output": 134,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "reasoning": 48,
+        "totalTokens": 2501
+      },
+      "failure": null,
+      "jev": {
+        "calls": 0,
+        "reason": "disabled",
+        "elapsedMs": 1,
+        "requestMatched": true,
+        "inputTokens": null,
+        "outputTokens": null,
+        "predictions": {},
+        "correct": null
+      }
+    },
+    {
+      "stage": 2,
+      "status": "completed",
+      "elapsedMs": 9699,
+      "gradeMs": 0,
+      "requests": 2,
+      "assistantMessages": 2,
+      "requestBytes": [
+        9738,
+        11972
+      ],
+      "prefixPreserved": true,
+      "toolDefinitionsStable": true,
+      "inspections": 1,
+      "argumentChars": 37,
+      "resultChars": 1857,
+      "protocolValid": true,
+      "outputValid": true,
+      "predictions": {
+        "item-1": "partial",
+        "item-2": "not_applied",
+        "item-3": "completed",
+        "item-4": "unknown",
+        "item-5": "not_applied",
+        "item-6": "partial",
+        "item-7": "unknown",
+        "item-8": "completed"
+      },
+      "correct": 8,
+      "total": 8,
+      "exact": true,
+      "followedJudgments": null,
+      "usage": {
+        "input": 2164,
+        "output": 129,
+        "cacheRead": 1280,
+        "cacheWrite": 0,
+        "reasoning": 43,
+        "totalTokens": 3573
+      },
+      "failure": null,
+      "jev": {
+        "calls": 0,
+        "reason": "disabled",
+        "elapsedMs": 1,
+        "requestMatched": true,
+        "inputTokens": null,
+        "outputTokens": null,
+        "predictions": {},
+        "correct": null
+      }
+    },
+    {
+      "stage": 3,
+      "status": "completed",
+      "elapsedMs": 9227,
+      "gradeMs": 0,
+      "requests": 2,
+      "assistantMessages": 2,
+      "requestBytes": [
+        14195,
+        16437
+      ],
+      "prefixPreserved": true,
+      "toolDefinitionsStable": true,
+      "inspections": 1,
+      "argumentChars": 37,
+      "resultChars": 1865,
+      "protocolValid": true,
+      "outputValid": true,
+      "predictions": {
+        "item-1": "unknown",
+        "item-2": "completed",
+        "item-3": "partial",
+        "item-4": "not_applied",
+        "item-5": "completed",
+        "item-6": "not_applied",
+        "item-7": "unknown",
+        "item-8": "partial"
+      },
+      "correct": 8,
+      "total": 8,
+      "exact": true,
+      "followedJudgments": null,
+      "usage": {
+        "input": 1302,
+        "output": 154,
+        "cacheRead": 3200,
+        "cacheWrite": 0,
+        "reasoning": 68,
+        "totalTokens": 4656
+      },
+      "failure": null,
+      "jev": {
+        "calls": 0,
+        "reason": "disabled",
+        "elapsedMs": 0,
+        "requestMatched": true,
+        "inputTokens": null,
+        "outputTokens": null,
+        "predictions": {},
+        "correct": null
+      }
+    }
+  ]
+}

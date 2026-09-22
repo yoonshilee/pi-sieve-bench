@@ -1,0 +1,148 @@
+{
+  "experiment": "semantic-observation-batches-v0.6",
+  "groups": [
+    {
+      "workflow": "outcome",
+      "arm": "main",
+      "n": 3,
+      "success": 3,
+      "correct": 72,
+      "total": 72,
+      "medianMs": 28498,
+      "minMs": 23472,
+      "maxMs": 28930,
+      "requests": 18,
+      "usage": {
+        "input": 15531,
+        "output": 1033,
+        "cacheRead": 15104,
+        "cacheWrite": 0,
+        "reasoning": 265,
+        "totalTokens": 31668
+      },
+      "resultChars": 16773,
+      "prefixChanges": 0,
+      "jevCalls": 0,
+      "jevFallbacks": 0,
+      "jevInputTokens": null,
+      "jevOutputTokens": null
+    },
+    {
+      "workflow": "outcome",
+      "arm": "jev",
+      "n": 3,
+      "success": 3,
+      "correct": 72,
+      "total": 72,
+      "medianMs": 28130,
+      "minMs": 26448,
+      "maxMs": 29123,
+      "requests": 18,
+      "usage": {
+        "input": 11330,
+        "output": 756,
+        "cacheRead": 13184,
+        "cacheWrite": 0,
+        "reasoning": 0,
+        "totalTokens": 25270
+      },
+      "resultChars": 5123,
+      "prefixChanges": 0,
+      "jevCalls": 9,
+      "jevFallbacks": 0,
+      "jevInputTokens": 21366,
+      "jevOutputTokens": 3393
+    },
+    {
+      "workflow": "evidence",
+      "arm": "main",
+      "n": 3,
+      "success": 3,
+      "correct": 72,
+      "total": 72,
+      "medianMs": 30706,
+      "minMs": 28058,
+      "maxMs": 34077,
+      "requests": 18,
+      "usage": {
+        "input": 19013,
+        "output": 1303,
+        "cacheRead": 11776,
+        "cacheWrite": 0,
+        "reasoning": 493,
+        "totalTokens": 32092
+      },
+      "resultChars": 17178,
+      "prefixChanges": 0,
+      "jevCalls": 0,
+      "jevFallbacks": 0,
+      "jevInputTokens": null,
+      "jevOutputTokens": null
+    },
+    {
+      "workflow": "evidence",
+      "arm": "jev",
+      "n": 3,
+      "success": 0,
+      "correct": 69,
+      "total": 72,
+      "medianMs": 28643,
+      "minMs": 25353,
+      "maxMs": 30947,
+      "requests": 18,
+      "usage": {
+        "input": 12634,
+        "output": 792,
+        "cacheRead": 12032,
+        "cacheWrite": 0,
+        "reasoning": 0,
+        "totalTokens": 25458
+      },
+      "resultChars": 5385,
+      "prefixChanges": 0,
+      "jevCalls": 9,
+      "jevFallbacks": 0,
+      "jevInputTokens": 20739,
+      "jevOutputTokens": 3756
+    }
+  ],
+  "pairs": [
+    {
+      "workflow": "outcome",
+      "repeat": 1,
+      "eligible": true,
+      "ratio": 0.8059609243553205
+    },
+    {
+      "workflow": "evidence",
+      "repeat": 1,
+      "eligible": false,
+      "ratio": null
+    },
+    {
+      "workflow": "outcome",
+      "repeat": 2,
+      "eligible": true,
+      "ratio": 1.0938445251058682
+    },
+    {
+      "workflow": "evidence",
+      "repeat": 2,
+      "eligible": false,
+      "ratio": null
+    },
+    {
+      "workflow": "outcome",
+      "repeat": 3,
+      "eligible": true,
+      "ratio": 1.0130821187344472
+    },
+    {
+      "workflow": "evidence",
+      "repeat": 3,
+      "eligible": false,
+      "ratio": null
+    }
+  ],
+  "actualCostUsd": null
+}

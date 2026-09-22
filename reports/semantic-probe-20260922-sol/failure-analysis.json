@@ -1,0 +1,40 @@
+{
+  "strictErrors": [
+    {
+      "run": "evidence-1-jev",
+      "stage": 3,
+      "item": "item-7",
+      "expected": "unrelated",
+      "actual": "insufficient",
+      "jevActual": "insufficient",
+      "text": "A tutorial explains how idempotency keys normally prevent duplicate records. It makes no claim about whether this operation used such a key or what its retry actually wrote."
+    },
+    {
+      "run": "evidence-2-jev",
+      "stage": 3,
+      "item": "item-7",
+      "expected": "unrelated",
+      "actual": "insufficient",
+      "jevActual": "insufficient",
+      "text": "A tutorial explains how idempotency keys normally prevent duplicate records. It makes no claim about whether this operation used such a key or what its retry actually wrote."
+    },
+    {
+      "run": "evidence-3-jev",
+      "stage": 3,
+      "item": "item-7",
+      "expected": "unrelated",
+      "actual": "insufficient",
+      "jevActual": "insufficient",
+      "text": "A tutorial explains how idempotency keys normally prevent duplicate records. It makes no claim about whether this operation used such a key or what its retry actually wrote."
+    }
+  ],
+  "interpretation": "One repeated boundary disagreement: general topical background versus evidence about the specific operation. No incorrect support or contradiction verdict occurred. Frozen labels were not revised.",
+  "postHocDiagnostic": {
+    "mergedLabels": [
+      "unrelated",
+      "insufficient"
+    ],
+    "evidenceJevAgreement": "72/72",
+    "use": "Sensitivity only; not a replacement for strict scores or successful-pair timing."
+  }
+}
